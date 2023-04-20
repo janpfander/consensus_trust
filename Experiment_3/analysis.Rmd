@@ -1,0 +1,434 @@
+---
+title: "Analysis experiment 3"
+author: "Jan Pfänder, Hugo Mercier"
+date: "2023-03-09"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r packages, message=FALSE, warning=FALSE}
+library(tidyverse)     # create plots with ggplot, manipulate data, etc.
+library(broom.mixed)   # convert regression models into nice tables
+library(modelsummary)  # combine multiple regression models into a single table
+library(lme4)          # model specification / estimation 
+library(lmerTest)      # provides p-values in the output
+library(ggpubr)        # stile feature of ggplot
+library(sjPlot)        # plot the interaction model
+library(gghalves)      # Special half geoms
+library(ggbeeswarm)    # Special distribution-shaped point jittering
+library(ggrepel)       # for non-overlapping labels in graphs
+library(kableExtra)   # for tables
+```
+
+```{r, message=FALSE}
+d <- read_csv("./data/cleaned.csv")
+```
+
+### Some themes and functions
+
+```{r, echo=FALSE}
+# round numbers from models
+rounded_numbers <- function(x) mutate_if(x, is.numeric, round, 3)
+
+#set general theme for plots
+plot_theme <- theme_minimal(base_size = 12) +
+  theme(# Bold, bigger title
+        plot.title = element_text(face = "bold", size = rel(1.7)),
+        # Plain, slightly bigger subtitle that is grey
+        plot.subtitle = element_text(face = "plain", size = rel(1.3), color = "grey70"),
+        # Bold legend titles
+        legend.title = element_text(face = "bold"),
+        # Bold axis titles
+        axis.title = element_text(face = "bold"))
+```
+
+
+## Data analysis
+
+### Hypothesis 1a
+
+We will perform a paired t-test to assess the effect of convergence on participants’ accuracy ratings for the experts' predictions. This test accounts for the dependency between the two conditions of _convergence_ issued by the fact that in our design, this was a within-participant factor.
+
+We will limit the sample to those participants that were assigned to the indepdendence condition of our second, between-participants factor _independence_. 
+
+```{r}
+# filter data
+independence_sample <- d %>% filter(independence == "indep")
+```
+
+```{r}
+# combined summary stats
+independence_sample %>%
+  group_by(convergence) %>%
+  summarize(across(c(accuracy, competence), 
+                   list(mean = mean, sd = sd)))
+```
+
+```{r}
+# T-test
+t <- t.test(accuracy ~ convergence, data = independence_sample, paired = TRUE)
+t
+```
+The paired t-test shows that *given independence*, there is a significant difference in accuracy ratings between _convergence_ and _divergence_. In the convergence condition, participants rated experts' accuracy higher by `r abs(t$estimate[[1]])` points (on a scale from 1 to 7) on average.
+
+For a robustness check, we run a mixed model, including random intercepts and slopes by participants. For reference, we also report a fixed-only effects regression. 
+```{r}
+# accuracy
+# fixed linear regression models for reference
+fixed_accuracy = lm(accuracy ~ convergence, data= independence_sample)
+# mixed model
+mixed_accuracy = lmer(accuracy ~ convergence + (1 + convergence |ID), data = independence_sample)
+
+# competence
+# fixed linear regression models for reference
+fixed_competence = lm(competence ~ convergence, data= independence_sample)
+# mixed model
+mixed_competence = lmer(competence ~ convergence + (1 + convergence |ID), data = independence_sample)
+
+# store in list
+models = list("fixed" = fixed_accuracy,
+              "mixed" = mixed_accuracy, 
+              "fixed" = fixed_competence, 
+              "mixed" = mixed_competence)
+```
+
+```{r}
+modelsummary(models,
+             stars = TRUE,
+             title = 'Models estimating effect of convergence on accuracy and competence') %>%
+    add_header_above(c(" " = 1, "Accuracy" = 2, "Competence" = 2))
+```
+
+### Hypothesis 1b
+We proceed just as with hypothesis 1a, but for `competence` ratings, given _independence_.
+
+```{r}
+# T-test
+t <- t.test(competence ~ convergence, data = independence_sample, paired = TRUE)
+t
+```
+The paired t-test shows that *given independence*, there is a significant difference in accuracy ratings between _convergence_ and _divergence_. In the convergence condition, participants rated experts' accuracy higher by `r abs(t$estimate[[1]])` points (on a scale from 1 to 7) on average.
+
+For a robustness check, we run a mixed model (see above). 
+
+### Hypothesis 2a
+
+We want to know how the between factor `independence` alters the effect of the within factor `convergence` . We run an OLS regression with both convergence and independence and their interaction as independent variables, and `accuracy` ratings as dependent variables. We have
+
+accuracy = a + b1 convergence + b2 independence + b3 independence*convergence
+
+where b1 is the effect of convergence, conditional on dependence, b2 is the effect of independence, conditional on divergence, and b3 the interaction term, indicating the difference of the effect of convergence between the independence and dependence condition. Based on these coefficients, we can calculate the expected means of the accuracy ratings in the four conditions: 
+
+    E(competence | convergence = 1 , independence = 0) = a + b1
+    E(competence | convergence = 0 , independence = 0) = a 
+    E(competence | convergence = 1 , independence = 1) = a + b1 + b2 + b3
+    E(competence | convergence = 0 , independence = 1) = a + b2
+
+If the interaction term b3 is significant, then there is a difference in the effect of convergence between independent and dependent contexts. If the term is positive, the effect is more positive in the independent context. 
+
+```{r}
+# effect-code convergence and independence
+d <- d %>% 
+  mutate(convergence_effect = recode(convergence, "div" = -0.5, "conv" = +0.5),
+         independence_effect = recode(independence, "confl" = -0.5,
+                                     "indep" = +0.5))
+# accuracy
+fixed_interaction_accuracy = lm(accuracy ~ convergence*independence, data = d)
+mixed_interaction_accuracy = lmer(accuracy ~ convergence_effect + 
+                            independence_effect + 
+                            convergence_effect*independence_effect + 
+                            (1 + convergence_effect | ID), data = d)
+
+# competence
+fixed_interaction_competence = lm(competence ~ convergence*independence, data = d)
+mixed_interaction_competence = lmer(competence ~ convergence_effect + 
+                            independence_effect + 
+                            convergence_effect*independence_effect + 
+                            (1 + convergence_effect | ID), data = d)
+# store in list
+models = list("fixed" = fixed_interaction_accuracy,
+              "mixed" = mixed_interaction_accuracy, 
+              "fixed" = fixed_interaction_competence, 
+              "mixed" = mixed_interaction_competence)
+
+```
+
+```{r}
+modelsummary(models,
+             stars = TRUE,
+             title = 'Models estimating interaction of convergence and independence on accuracy and competence') %>%
+    add_header_above(c(" " = 1, "Accuracy" = 2, "Competence" = 2))
+```
+
+As predicted, we find a significant and positive interaction term (0.99), suggesting that the effect of `convergence` is more positive in the _independence_ condition. Meanwhile, there is also a significant positive effect, in the _conflict of interest_ condition (0.89). The positive effect of `convergence` on `accuracy` is thus more than twice as big in the _independence_ condition, but generally positive. 
+
+As a robustness check, we run a mixed model OLS regression that will additionally include random intercepts and random slopes for participants. This is to control for the dependency of our observations, because each participant gives several _convergence_, but also several _divergence_ ratings. Since we have one between (`independence`) and one within (`convergence`) factor, random slopes will only be included for the within factor, i.e. `convergence`. In this model, in order to assign meaningful random effects, we will change the dummy coding (0,1) for our factors to effect coding (-0.5, 0.5). 
+
+With the effect coding, the interpretation of the regression coefficients changes, except for the interaction term:
+
+    a = grand mean, i.e. the mean of competence ratings across all conditions
+    b1 = main effect of convergence, i.e. average difference for within conditions convergence - divergence across levels of the factor independence
+    b2 = main effect of independence, i.e. average difference for between conditions independence - conflict of interest across levels of the factor convergence
+    b3 = interaction term, i.e. difference in effect of convergence between the two levels of independence (independence and conflict of interest)
+
+In the mixed effect model, we find the same positive and significant interaction term as in the simple linear model before (0.99). 
+
+What is new is that we additionally find a significant main effect of `independence` (0.33). In other words, across _convergent_ and _divergent_ conditions, people rated _independent_ experts as more competent by 0.33 points. This effect is small compared to the main effect of `convergence` (1.38). 
+
+### Hypothesis 2b
+
+We proceed just as with H2a, but this time with `competence` as dependent variable (see above). 
+
+As predicted, we find a significant and positive interaction term (0.80), suggesting that the effect of `convergence` is more positive in the _independence_ condition. Meanwhile, there is also a significant positive effect, in the _conflict of interest_ condition (0.82). The positive effect of `convergence` on `competence` is thus twice as big in the _independence_ condition, but generally positive. 
+
+In the mixed effect model, we find the same positive and significant interaction term as in the simple linear model before (0.80). 
+
+What is new is that we additionally find a significant main effect of `independence` (0.28). In other words, across _convergent_ and _divergent_ conditions, people rated experts as more competent by 0.28 points. This effect is small compared to the main effect of `convergence` (1.22). 
+
+### Research question 1
+
+We will perform a paired t-test to assess the effect of convergence on participants’ accuracy ratings for the experts' predictions. 
+
+We will limit the sample to those participants that were assigned to the _conflict of interest_ condition of our second, between-participants factor `independence`. 
+
+```{r}
+# reduce data to independence conditions
+conflict_sample <- d %>% 
+  filter(independence == "confl")
+```
+
+```{r}
+# descriptive stats
+conflict_sample %>% 
+  group_by(convergence) %>% 
+  summarise(across(c(accuracy,competence), 
+                   list(mean = mean, sd = sd)
+                   )
+            )
+```
+
+```{r}
+# T-test
+t <- t.test(accuracy ~ convergence, data = conflict_sample, paired = TRUE)
+t
+```
+
+The paired t-test shows that *given conflict of interest*, there is a significant difference in `accuracy` ratings between _convergence_ and _divergence_. However, this difference goes into the same direction as given _independence_ (see H1a) and is not inverse as we had speculated: In the convergence condition, participants rated experts' accuracy higher by `r abs(t$estimate[[1]])` points (on a scale from 1 to 7) on average.
+
+### Research question 2
+
+We proceed just as with RQ1. We perform a paired t-test to assess the effect of `convergence`, but this time on participants’ `competence` ratings, given _conflict of interest_.
+
+```{r}
+# T-test
+t <- t.test(competence ~ convergence, data = conflict_sample, paired = TRUE)
+t
+```
+
+The paired t-test shows that *given conflict of interest*, there is a significant difference in `competence` ratings between _convergence_ and _divergence_. However, again, this difference goes into the same direction as given _independence_ (see H1b) and is not inversed as we had speculated: In the convergence condition, participants rated experts' competence higher by `r abs(t$estimate[[1]])` points (on a scale from 1 to 7) on average.
+
+## Visualization
+
+### Main plot
+
+```{r main-plot}
+interaction_accuracy <- ggplot(d, aes(x=independence, y=accuracy, fill = convergence, 
+                     shape = convergence,
+                     group = convergence,
+                     color = convergence)) +
+  scale_x_discrete(limits = c("confl", "indep"), 
+                    labels = c("conflict of interest", "independence")) +
+  geom_half_violin(data = d %>% filter(independence=="confl"), 
+                   position = position_nudge(x = -.2), adjust=2, alpha = .4,
+                   side = "l") +
+  geom_half_violin(data = d %>% filter(independence=="indep"), 
+                   position = position_nudge(x = .2), adjust=2, alpha = .4,
+                   side = "r") + 
+  xlab("Condition") +
+  ylab("Accuracy") +
+  scale_y_continuous(breaks=c(1,2,3,4,5,6,7)) +
+  #ggtitle('Effect of convergence by independence/conflict of interest') +
+  stat_summary(fun = "mean", geom = "point", size = 3) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(fun.data = "mean_se", geom = "errorbar", width = .2) +
+  scale_fill_manual(name = NULL,
+    labels = c("divergent", "convergent"),
+    values = c("#E69F00", "#56B4E9")) +
+  scale_color_manual(name = NULL,
+    labels = c("divergent", "convergent"),
+    values = c("#E69F00", "#56B4E9")) +
+  guides(shape = "none",
+         fill = guide_legend(title = NULL)) +
+  plot_theme +
+  # change font sizes
+  theme(axis.text = element_text(size = 10)) +
+  theme(axis.title = element_text(size = 15)) +
+  theme(legend.text = element_text(size = 10))
+
+interaction_competence <- ggplot(d, aes(x=independence, y=competence, 
+                                        fill = convergence, 
+                                        shape = convergence, 
+                                        group = convergence, 
+                                        color = convergence)) +
+  scale_x_discrete(limits = c("confl", "indep"), 
+                   labels = c("conflict of interest", "independence")) +
+  geom_half_violin(data = d %>% filter(independence=="confl"), 
+                   position = position_nudge(x = -.2), adjust=2, alpha = .4,
+                   side = "l") +
+  geom_half_violin(data = d %>% filter(independence=="indep"), 
+                   position = position_nudge(x = .2), adjust=2, alpha = .4,
+                   side = "r") + 
+  xlab("Condition") +
+  ylab("Competence")+
+  scale_y_continuous(breaks=c(1,2,3,4,5,6,7))+
+  #ggtitle('Effect of convergence by independence/conflict of interest') +
+  stat_summary(fun = "mean", geom = "point", size = 3) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(fun.data = "mean_se", geom = "errorbar", width = .2) +
+  scale_fill_manual(name = NULL,
+    labels = c("divergent", "convergent"),
+    values = c("#E69F00", "#56B4E9")) +
+  scale_color_manual(name = NULL,
+    labels = c("divergent", "convergent"),
+    values = c("#E69F00", "#56B4E9")) +
+  guides(shape = "none") +
+  plot_theme +
+  # change font sizes
+  theme(axis.text = element_text(size = 10)) +
+  theme(axis.title = element_text(size = 15)) +
+  theme(legend.text = element_text(size = 10)) 
+
+
+figure <- ggarrange(interaction_accuracy, interaction_competence, 
+                    common.legend = T) +
+  theme(legend.position="top") 
+figure
+
+```
+
+### Other plots
+
+```{r}
+# create objects for means to include in graphics
+d_means <- independence_sample %>%
+  group_by(convergence) %>%
+  summarize(mean_accuracy = mean(accuracy), 
+            mean_competence = mean(competence))
+
+
+accuracy_plot <- ggplot(data=independence_sample, 
+                        aes(x=accuracy, fill=convergence)) + 
+  geom_density(adjust=2, alpha=.4)+
+  scale_x_continuous(name = "Accuracy ratings", breaks = seq(1, 7), 
+                     limits=c(1, 7)) +
+  scale_y_continuous(name = "Density", limits=c(0, 0.4)) +
+  geom_vline(data=d_means, aes(xintercept=mean_accuracy, 
+                                       color=convergence),
+             show.legend = FALSE,
+             linetype="dashed", size=1.5) +
+  geom_text_repel(data = d_means, 
+            aes(x = mean_accuracy, y = 0.35, 
+                label =  paste("mean", round(mean_accuracy, digits = 1),
+                               sep = " = "))) +
+  scale_fill_manual(
+    name = "Convergence: ",
+    labels = c("divergent", "convergent"),
+    values = c("#E69F00", "#56B4E9")) + 
+  scale_color_manual(values = c("#E69F00", "#56B4E9")) +
+  guides(fill = guide_legend(title = NULL)) +
+  theme_pubr()
+
+accuracy_plot
+
+competence_plot <- ggplot(data=independence_sample, 
+                          aes(x=competence, fill=convergence)) + 
+  geom_density(adjust=2, alpha=.4)+
+  scale_x_continuous(name = "Competence ratings", breaks = seq(1, 7), 
+                     limits=c(1, 7)) +
+  scale_y_continuous(name = "Density", limits=c(0, 0.4)) +
+  geom_vline(data=d_means, aes(xintercept=mean_competence, 
+                               color=convergence),
+             show.legend = FALSE,
+             linetype="dashed", size=1.5) +
+  geom_text_repel(data = d_means, 
+            aes(x = mean_competence, y = 0.35, 
+                label =  paste("mean", round(mean_competence, digits = 1),
+                               sep = " = "))) +
+  scale_fill_manual(
+    name = "Convergence: ",
+    labels = c("divergent", "convergent"),
+    values = c("#E69F00", "#56B4E9")) + 
+  scale_color_manual(values = c("#E69F00", "#56B4E9")) +
+  guides(fill = guide_legend(title = NULL)) +
+  theme_pubr()
+
+figure <- ggarrange(accuracy_plot, competence_plot, common.legend = T) +
+  theme(legend.position="top") 
+figure
+```
+
+Here's a visualization of the difference in `accuracy` ratings between _convergence_ and _divergence_ conditions. 
+```{r}
+# reduce data to independence conditions
+independence_sample <- d %>% 
+  filter(independence == "indep")
+
+# Vizualization
+density_plot <- ggplot(data=independence_sample, aes(x=accuracy, fill=convergence)) +
+geom_density(alpha=.4) 
+density_plot
+
+density_plot_smoothed <- ggplot(data=independence_sample, aes(x=accuracy, fill=convergence)) + 
+  geom_density(adjust=3, alpha=.4)+
+  scale_x_continuous(name = "Accuracy ratings", breaks = seq(1, 7), 
+                     limits=c(1, 7)) +
+  theme_pubr()
+density_plot_smoothed
+```
+
+Here's a visualization of the difference in `competence` ratings between _convergence_ and _divergence_ conditions. 
+```{r}
+# Vizualization
+density_plot <- ggplot(data=independence_sample, aes(x=competence, fill=convergence)) +
+geom_density(alpha=.4) 
+density_plot
+
+density_plot_smoothed <- ggplot(data=independence_sample, aes(x=competence, fill=convergence)) + 
+  geom_density(adjust=3, alpha=.4)+
+  scale_x_continuous(name = "Competence ratings", breaks = seq(1, 7), 
+                     limits=c(1, 7)) +
+  theme_pubr()
+density_plot_smoothed
+```
+
+Here's a visualization of the difference in `accuracy` ratings between _convergence_ and _divergence_ conditions. 
+```{r}
+# Vizualization
+density_plot <- ggplot(data=conflict_sample, aes(x=accuracy, fill=convergence)) +
+geom_density(alpha=.4) 
+density_plot
+
+density_plot_smoothed <- ggplot(data=conflict_sample, aes(x=accuracy, fill=convergence)) + 
+  geom_density(adjust=3, alpha=.4)+
+  scale_x_continuous(name = "Accuracy ratings", breaks = seq(1, 7), 
+                     limits=c(1, 7)) +
+  theme_pubr()
+density_plot_smoothed
+```
+
+Here's a visualization of the difference in `competence` ratings between _convergence_ and _divergence_ conditions. 
+```{r}
+# Vizualization
+density_plot <- ggplot(data=conflict_sample, aes(x=competence, fill=convergence)) +
+geom_density(alpha=.4) 
+density_plot
+
+density_plot_smoothed <- ggplot(data=conflict_sample, aes(x=competence, fill=convergence)) + 
+  geom_density(adjust=3, alpha=.4)+
+  scale_x_continuous(name = "Competence ratings", breaks = seq(1, 7), 
+                     limits=c(1, 7)) +
+  theme_pubr()
+density_plot_smoothed
+```
+

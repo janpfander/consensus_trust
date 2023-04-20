@@ -1,0 +1,153 @@
+---
+title: 
+- "Analysis Experiment 4: Do inferences from convergence hold in a categorical choice setting?"
+author: 
+- "Hugo Mercier, Jan Pfänder" 
+date: "2023-02-02"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, error = TRUE) 
+```
+
+```{r, message=FALSE}
+library(tidyverse) # for everything
+library(tidyr) # some additional, neat tidy reshaping functions
+library(lme4) # for linear mixed models
+library(lmerTest) # p-values for mixed models
+library(broom) # for tidy outputs of regressions
+library(broom.mixed) # for tidy outputs of linear mixed models
+library(ggridges) # for plots
+library(gghalves) # for plots
+library(ggbeeswarm) # Special distribution-shaped point jittering
+library(scales)  # for nice axis labels
+library(modelsummary) # regression tables
+library(patchwork) # combine plots
+library(ggrepel) # fit labels in plots 
+```
+
+### Some themes and functions
+
+```{r}
+# round numbers from models
+rounded_numbers <- function(x) mutate_if(x, is.numeric, round, 3)
+
+#set general theme for plots
+plot_theme <- theme_minimal(base_size = 12) +
+  theme(# Bold, bigger title
+        plot.title = element_text(face = "bold", size = rel(1.7)),
+        # Plain, slightly bigger subtitle that is grey
+        plot.subtitle = element_text(face = "plain", size = rel(1.3), color = "grey70"),
+        # Bold legend titles
+        legend.title = element_text(face = "bold"),
+        # Bold axis titles
+        axis.title = element_text(face = "bold"))
+```
+
+### Read data
+```{r, message=FALSE}
+# read data
+d <- read_csv("./data/cleaned.csv")
+```
+
+### H1a: Participants perceive an estimate of an independent informant as more accurate the more it converges with the estimates of other informants.
+
+We use a linear mixed effect model with random intercept and random slope per participant. Should this model yield convergence issues, we will use a model with random intercept only. 
+
+In all our models we treat `convergence` as a continuous variable. We will, however, include robustness checks where we treat convergence as a categorical variable, allowing to inspect difference between different levels. 
+
+```{r}
+# model for accuracy
+# random intercept and slope by participants
+model_accuracy <- lmer(accuracy ~ convergence + (1 + convergence | id), 
+                                 data = d)
+
+summary(model_accuracy)
+```
+
+
+### H1b: Participants perceive an independent informant as more competent the more their estimate converges with the estimates of other informants.
+
+We will proceed in the same way for `competence` as we did for `accuracy` above.
+
+```{r}
+# model for competence
+# random intercept and slope by participants
+model_competence <- lmer(competence ~ convergence + 
+                           (1 + convergence | id), data = d)
+
+summary(model_competence)
+```
+
+# Robustness checks
+
+In the models above, we treated convergence as a continuous variable. Based on the different levels, we will build a categorical variable, `convergence_categorical`. 
+
+```{r}
+# make a categorical variable from `convergence`
+d <- d %>% 
+  mutate(convergence_categorical = recode_factor(convergence, 
+                                                 `0` = "opposing majority", 
+                                                 `1` = "divergence", 
+                                                 `2` = "majority", 
+                                                 `3` = "consensus",
+                                                 .default = NA_character_)
+         )
+
+levels(d$convergence_categorical)
+  
+```
+
+
+We run the same models outlined in the hypotheses section, but replacing `convergence` with `convergence_categorical`. This also allows us to inspect heterogeniety in differences between levels (with respect to the baseline, i.e. "opposing majority"). 
+
+
+### Plots
+
+```{r}
+# plot for accuracy
+plot_accuracy <- ggplot(d,
+       aes(x = convergence_categorical, y = accuracy, fill = convergence_categorical)) +
+  geom_half_violin(position = position_nudge(x = -.2),
+                   adjust=2, alpha = .8,
+                   side = "l") +
+  stat_summary(fun = "mean", geom = "point", size = 1, shape = 21) +
+  stat_summary(fun = "mean", geom = "line", size = 1, linetype = "dashed") +
+  stat_summary(fun.data = "mean_se", geom = "errorbar", width = .2) +
+  # Add nice labels
+  labs(x = "Convergence", y = "Accuracy") +
+  scale_fill_viridis_d(option = "plasma", begin = 0.1) +
+  guides(fill = FALSE) +
+  plot_theme + 
+  theme(axis.text.x = element_text(angle = 20, hjust = 1))
+```
+
+```{r}
+# plot for competence
+plot_competence <- ggplot(d,
+       aes(x = convergence_categorical, y = competence, fill = convergence_categorical)) +
+  geom_half_violin(position = position_nudge(x = -.2),
+                   adjust=2, alpha = .8,
+                   side = "l") +
+  stat_summary(fun = "mean", geom = "point", size = 1, shape = 21) +
+  stat_summary(fun = "mean", geom = "line", size = 1, linetype = "dashed") +
+  stat_summary(fun.data = "mean_se", geom = "errorbar", width = .2) +
+  # Add nice labels
+  labs(x = "Convergence", y = "Competence") +
+  scale_fill_viridis_d(option = "plasma", begin = 0.1) +
+  guides(fill = FALSE) +
+  plot_theme + 
+  theme(axis.text.x = element_text(angle = 20, hjust = 1))
+```
+
+
+```{r}
+plot_accuracy + plot_competence
+```
+
+
+
+
