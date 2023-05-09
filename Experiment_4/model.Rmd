@@ -103,7 +103,7 @@ simulate_single_population <- function(population, sample, options,
   
   # Create a relative measure of competence that allows to compare across
   # different numbers of choice options. 
-  # This measure varies from 0 = chance to 1 = definitely right. 
+  # This measure varies from 0 = random chance to 1 = definitely right. 
   # We use min-max scaling, with min = 1/options and max = 1.
   data <- data %>% 
     mutate(relative_competence = (competence - 1/options) / (1 - 1/options)
@@ -227,7 +227,7 @@ simulate_various_populations <- function(iterations,...) {
 ```
 
 
-## Results by varying choice options and sample size function
+## Function for varying choice options and sample size function
 
 This function allows us to investigate how accuracy and competence change with varying the number of choice options and the sample size. 
 
@@ -305,7 +305,7 @@ vary_sample_options <- function(vary = "options", file_name, n, ...) {
 
 ## Plot functions
 
-### a
+### a) Plot various populations
 
 First, we want a function that plots results obtained by the `simulate_various_populations` function. 
 ```{r}
@@ -343,7 +343,8 @@ plot_results <- function(data, outcome = "everything") {
     scale_fill_viridis_d(option = "plasma", begin = 0.1) +
     guides(fill = FALSE) +
     plot_theme + 
-    theme(axis.text.x = element_text(angle = 20, hjust = 1)) 
+    theme(axis.text.x = element_text(angle = 20, hjust = 1)) +
+    ylim(c(0, 1))
   
   # plot for competence
   plot_competence <- ggplot(d,
@@ -359,7 +360,8 @@ plot_results <- function(data, outcome = "everything") {
     scale_fill_viridis_d(option = "plasma", begin = 0.1) +
     guides(fill = FALSE) +
     plot_theme + 
-    theme(axis.text.x = element_text(angle = 20, hjust = 1))
+    theme(axis.text.x = element_text(angle = 20, hjust = 1)) +
+    ylim(c(0, 1))
   
   # unite tables
   tables <- gridExtra::grid.arrange(descriptive, simulation_info, ncol = 2)
@@ -382,12 +384,12 @@ plot_results <- function(data, outcome = "everything") {
 }
 ```
 
-### b
+### b) Plot varying sample options
 
 Second, we want a function that plots results obtained by the `vary_sample_options` function. 
 
 ```{r}
-plot_results <- function(data, variable = options) {
+plot_results_vary <- function(data, variable = options) {
   
   d <- data
   
@@ -446,7 +448,7 @@ plot_results <- function(data, variable = options) {
 }
 ```
 
-
+## Simulate
 
 ```{r, message=FALSE}
 n <- c(3, 10, 50, 100, 200)
@@ -457,8 +459,8 @@ vary_sample_options(n = n, vary = "sample", iterations = 100, population = 999, 
 data_3_options <- read_csv("data/model_3_options.csv")
 data_3_sample <- read_csv("data/model_3_samples.csv")
 
-plot_results(data_3_options)
-plot_results(data_3_sample, variable = sample)
+plot_results_vary(data_3_options)
+plot_results_vary(data_3_sample, variable = sample)
 
 ```
 
@@ -475,9 +477,6 @@ data_3_sample %>%
 ```
 
 
-
-
-
 ## Simulate
 
 Note that in the current state, we cannot vary `sample`. The function needs modification first. The problem is that it gets complicated with more than three informants, in the case of a majority constellation. There might be equal majorities (e.g. 5 informants, three options: 2 agree on 'A', 2 on 'B', one picks 'A'), equal minorities (e.g. 3 agree on 'A', one picks 'B', another picks 'C'), and unequal majorities (e.g. 3 agree on 'A', 2 agree on 'B').
@@ -486,29 +485,11 @@ I have to think about it again.
 
 ```{r}
 data_3 <- simulate_various_populations(iterations = 100, population = 999, sample = 3, options = 3)
-
-data_10 <- simulate_various_populations(iterations = 100, population = 999, sample = 3, options = 10)
-
-data_100 <- simulate_various_populations(iterations = 100, population = 999, sample = 3, options = 100)
-
-data_2 <- simulate_various_populations(iterations = 100, population = 999, sample = 3, options = 2)
 ```
 
 ```{r}
-plot_results(data_3)
-plot_results(data_10)
-
 data_3 %>% group_by(constellation) %>% summarise(across(c(average_accuracy, average_competence), mean))
 ```
-
-```{r}
-data_10 %>% group_by(constellation) %>% summarise(across(c(average_accuracy, average_competence), mean))
-```
-
-```{r}
-data_2 %>% group_by(constellation) %>% summarise(across(c(average_accuracy, average_competence), mean))
-```
-
 
 ```{r}
 plot_results(data_3)
@@ -749,8 +730,4 @@ plot_results <- function(data) {
 }
 ```
 
-```{r}
-test <- simulate_single_population(population = 999, sample = 3, options = 3)
-plot_results(test)
-```
 
