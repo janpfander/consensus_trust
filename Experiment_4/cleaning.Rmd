@@ -61,7 +61,14 @@ d <- d %>%
   rename(competence = com, 
          accuracy = acc) %>% 
   # all variables are coded as `character` - make key variables numeric
-  mutate(across(c(convergence, competence, accuracy), as.numeric)
+  mutate(across(c(convergence, competence, accuracy), as.numeric), 
+         # make a categorical variable from `convergence`
+         convergence_categorical = recode_factor(convergence, 
+                                                 `0` = "opposing majority", 
+                                                 `1` = "divergence", 
+                                                 `2` = "majority", 
+                                                 `3` = "consensus",
+                                                 .default = NA_character_)
          )
 ```
 

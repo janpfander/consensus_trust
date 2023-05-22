@@ -425,7 +425,14 @@ levels(d$attention) </code></pre>
   rename(competence = com, 
          accuracy = acc) %&gt;% 
   # all variables are coded as `character` - make key variables numeric
-  mutate(across(c(convergence, competence, accuracy), as.numeric)
+  mutate(across(c(convergence, competence, accuracy), as.numeric), 
+         # make a categorical variable from `convergence`
+         convergence_categorical = recode_factor(convergence, 
+                                                 `0` = &quot;opposing majority&quot;, 
+                                                 `1` = &quot;divergence&quot;, 
+                                                 `2` = &quot;majority&quot;, 
+                                                 `3` = &quot;consensus&quot;,
+                                                 .default = NA_character_)
          )</code></pre>
 </div>
 <div id="export-data" class="section level2">

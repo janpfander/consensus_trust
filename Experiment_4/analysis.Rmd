@@ -64,8 +64,6 @@ In all our models we treat `convergence` as a continuous variable. We will, howe
 # random intercept and slope by participants
 model_accuracy <- lmer(accuracy ~ convergence + (1 + convergence | id), 
                                  data = d)
-
-summary(model_accuracy)
 ```
 
 
@@ -78,32 +76,41 @@ We will proceed in the same way for `competence` as we did for `accuracy` above.
 # random intercept and slope by participants
 model_competence <- lmer(competence ~ convergence + 
                            (1 + convergence | id), data = d)
+```
 
-summary(model_competence)
+```{r}
+# combined results table
+modelsummary(list("Accuracy" = model_accuracy , "Competence" = model_competence), 
+             title = 'Models estimating effect of Convergence', 
+             stars = TRUE)
 ```
 
 # Robustness checks
 
-In the models above, we treated convergence as a continuous variable. Based on the different levels, we will build a categorical variable, `convergence_categorical`. 
+In the models above, we treated convergence as a continuous variable. We run the same models outlined in the hypotheses section, but replacing `convergence` with `convergence_categorical` (where all levels are categories). This also allows us to inspect heterogeniety in differences between levels (with respect to the baseline, i.e. "opposing majority"). 
 
 ```{r}
-# make a categorical variable from `convergence`
-d <- d %>% 
-  mutate(convergence_categorical = recode_factor(convergence, 
-                                                 `0` = "opposing majority", 
-                                                 `1` = "divergence", 
-                                                 `2` = "majority", 
-                                                 `3` = "consensus",
-                                                 .default = NA_character_)
-         )
-
-levels(d$convergence_categorical)
-  
+# show levels of `convergence`
+levels(as.factor(d$convergence_categorical))
 ```
 
+```{r}
+# model for accuracy
+# random intercept and slope by participants
+model_accuracy <- lmer(accuracy ~ convergence_categorical + (1 + convergence_categorical | id), 
+                                 data = d)
+# model for competence
+# random intercept and slope by participants
+model_competence <- lmer(competence ~ convergence_categorical + 
+                           (1 + convergence_categorical | id), data = d)
+```
 
-We run the same models outlined in the hypotheses section, but replacing `convergence` with `convergence_categorical`. This also allows us to inspect heterogeniety in differences between levels (with respect to the baseline, i.e. "opposing majority"). 
-
+```{r}
+# combined results table
+modelsummary(list("Accuracy" = model_accuracy , "Competence" = model_competence), 
+             title = 'Models estimating effect of Convergence', 
+             stars = TRUE)
+```
 
 ### Plots
 
