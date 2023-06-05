@@ -3,10 +3,10 @@ title: 'Preregistration Experiment 6: Is convergence more trustworthy when there
 author: "Jan Pfänder, Hugo Mercier"
 date: "2023-03-08"
 output:
-  html_document:
-    keep_md: yes
   pdf_document: 
       keep_md: yes
+  html_document:
+    keep_md: yes
 ---
 
 
@@ -30,12 +30,12 @@ No data has been collected yet.
 
 # III. Design
 
-Participants see eight situtations in which three advisors give investment recommendations. They are then asked to judge one advisor's accuracy and competence. We will manipulate two factors: convergence (four levels, within participants) and options (two levels, between participants).
+Participants see eight situtations in which three advisors give investment recommendations. They are then asked to judge one advisor's accuracy and competence. We will manipulate two factors: convergence (four levels, within participants) and number of options (two levels, between participants).
 
 > **Introduction for participants:** *"To be able to understand the task, please read the following instructions carefully: Some people are playing games in which they have to select the correct answer among three answers. You will see the results of several of these games. Each game is different, with different solutions and involving different players. All players answer independently of each other. At first, you have no idea how competent each individual player is: they might be completely at chance, or be very good at the task. It's also possible that some players are really good while others are really bad. Some games might be difficult while others are easy. Your task will be to evaluate the performance of one of the players based on what everyone's answers are."*
 
 
-![An example of a stimulus for the majority condition](figures/example_stimulus.png)
+![An example of a stimulus for the majority condition](figures/example_stimulus.png) 
 
 **Convergence**. Convergence varies by the ratio of players choosing the same response as the focal player (i.e. the one that participants evaluate). The levels of convergence are: (i) consensus, where all three players pick the same option [`coded value = 3`]; (ii) majority, where either the third or second player picks the same option as the first player [`coded value = 2`]; (iii) dissensus, where all three players pick different options [`coded value = 1`]; (iv) majority against the focal player's estimate, where the second and third player pick the same option, but one that is different from the first player's choice [`coded value = 0`]. In our analysis, we treat convergence as a continuous variable, assigning the values in squared parenthesis.
 
@@ -51,14 +51,16 @@ Table: Stimuli for 3 options condition by levels of convergence
 |     majority (2)      |  ![](figures/stimuli/majority_3_a.png){ width=60% }  |  ![](figures/stimuli/majority_3_b.png){ width=60% }  |
 |     consensus (3)     | ![](figures/stimuli/consensus_3_a.png){ width=60% }  | ![](figures/stimuli/consensus_3_b.png){ width=60% }  |
 
-**Options**. Independence has two levels: (i) '3' and (ii) '10'. 
+**Number of choice options**. Number of options has two levels: '3' '10'. 
 
-We manipulate independence between participants, i.e. each participant gets assigned to either the '3' or the '10' condition. All stimuli that participants see in their respective condition will involve the same number of choice options.
+We manipulate number of choice options between participants, i.e. each participant gets assigned to either the '3' or the '10' condition. All stimuli that participants see in their respective condition will involve the same number of choice options. 
+
+As for the '10' options condition, participants will see one of two distinct set of stimuli (`stimuli_10_version`): one in which the range of the answers corresponds to the range of the '3' options condition (`stimuli_10_version == 10`), and another with increased range (`stimuli_10_version == 10_distant`; see Appendix). We add the increased range condition because we think that there is the possibility that participant might not consider all options as relevant when they only see scenarios in which all answers cluster. For the main analyses, we will simply merge these two stimuli sets and treat them as part of the same '10' options condition. However, we will investigate potential differences as a research question. 
 
 
-Table: Example of a consensus stimulus for the two 'Option' conditions
+Table: Example of a consensus stimulus for the two 'Number of option' conditions
 
-|  Convergence  |                     Options: 3                      |                     Options: 10                      |
+|  Convergence  |                Number of options: 3                 |                Number of options: 10                 |
 |:-------------:|:---------------------------------------------------:|:----------------------------------------------------:|
 | consensus (3) | ![](figures/stimuli/consensus_3_a.png){ width=60% } | ![](figures/stimuli/consensus_10_a.png){ width=60% } |
 
@@ -70,9 +72,9 @@ As outcome variables, we will measure people's perceived accuracy and competence
 
 # IV. Hypotheses
 
-Considering only `3` options condition of the experiment at hand, we expect the findings of experiment four to replicate. In experiment four, players would choose among `3` options. 
+Considering only `3` options condition of the experiment at hand, we expect the findings of experiment four to replicate, for it is the exact same experiment as experiment four in this case. 
 
-### H1a: Participants perceive an estimate of an independent informant as more accurate the more it converges with the estimates of other informants, given three choice options.
+### H1a: In the three options condition, participants perceive an estimate of an independent informant as more accurate the more it converges with the estimates of other informants.
 
 To test this hypothesis, we only consider participants assigned to the `3` options condition.
 
@@ -93,7 +95,7 @@ alt_model_accuracy <- lmer(accuracy ~ convergence + (1 | id),
                            data = data %>% filter(options == "3"))
 ```
 
-### H1b: Participants perceive an independent informant as more competent the more their estimate converges with the estimates of other informants, given three choice options.
+### H1b:  In the three options condition, participants perceive an independent informant as more competent the more their estimate converges with the estimates of other informants.
 
 To test this hypothesis, we only consider participants assigned to the `3` options condition.
 
@@ -113,9 +115,9 @@ alt_model_competence <- lmer(competence ~ convergence + (1 | id),
                              data = data %>% filter(options == "3"))
 ```
 
-How about a context in which informants (i.e. the fictive players) could choose not among 3, but among 10 options? In line with our findings from experiment three, we predict that effects of convergence are more positive when there are more choice options: 
+How about a context in which informants (i.e. the fictive players) could choose not among 3, but among 10 options? Following the results from our model, we predict that effects of convergence are more positive when there are more choice options: 
 
-### H2a: The effect of convergence on accuracy (H1a) is more positive in a context where informants can choose among ten response options compared to when they can choose among only three. 
+### H2a: The effect of convergence on accuracy (H1a) is more positive in a context when informants can choose among ten response options compared to when they can choose among only three. 
 
 To test this hypothesis, we consider the full data.
 
@@ -137,7 +139,7 @@ alt_model_accuracy <- lmer(accuracy ~ convergence + options +
 ```
 
 
-### H2b: The effect of convergence on competence (H1b) is more positive in a context where informants can choose among ten response options compared to when they can choose among only three. 
+### H2b: The effect of convergence on competence (H1b) is more positive in a context when informants can choose among ten response options compared to when they can choose among only three. 
 
 To test this hypothesis, we consider the full data.
 
@@ -157,6 +159,41 @@ alt_model_competence <- lmer(competence ~ convergence + options +
                             options*convergence + (1 | id), 
                            data = data)
 ```
+
+## Research question 
+
+### RQ1: Within the 10 choice options condition, is the effect of convergence more positive for the set of stimuli with greater distance?
+
+
+```r
+# models for accuracy
+
+# random intercept and slope by participants
+model_accuracy <- lmer(accuracy ~ convergence + stimuli_10_version + 
+                            stimuli_10_version*convergence + (1 + convergence | id), 
+                       data = data)
+
+# in case of non-convergence: random intercept by participants only
+alt_model_accuracy <- lmer(accuracy ~ convergence + stimuli_10_version + 
+                            stimuli_10_version*convergence + (1 | id), 
+                           data = data)
+
+# models for competence
+
+# random intercept and slope by participants
+model_competence <- lmer(competence ~ convergence + stimuli_10_version + 
+                            stimuli_10_version*convergence + (1 + convergence | id), 
+                       data = data)
+
+# in case of non-convergence: random intercept by participants only
+alt_model_competence <- lmer(competence ~ convergence + stimuli_10_version + 
+                            stimuli_10_version*convergence + (1 | id), 
+                           data = data)
+```
+
+Should we find the difference, we will re-run the analyses of the second set of hypotheses restraining the data to the subset of the more distant set of stimuli for the 10 options condition. 
+
+Pick an example stimulus as earlier for illustrating choice options. See all stimuli in appendix.
 
 # Robustness checks
 
@@ -186,12 +223,6 @@ levels(data$convergence_categorical)
 
 We run the same models outlined in the hypotheses section, but replacing `convergence` with `convergence_categorical`. This also allows us to inspect heterogeneity in differences between levels (with respect to the baseline, i.e. "opposing majority").
 
-## Alternative stimuli with greater distance 
-
-We kept the same distance between 10 and 3. That's conservative - people might think that other options are not relevant and hence don't make a difference between 3 and 10 options. We therefore run the hypotheses set two comparing 3 to a version of 10 with larger distance. 
-
-Pick an example stimulus as earlier for illustrating choice options. See all stimuli in appendix. 
-
 # Exclusions
 
 We will exclude participants failing (i.e. participants not answering the question or writing anything that does not at least resemble "I pay attention") the following attention check:
@@ -200,15 +231,17 @@ We will exclude participants failing (i.e. participants not answering the questi
 
 # Power analysis
 
-We ran a power simulation to inform our choice of sample size. All assumptions and details on the procedure can be found in the `power_Exp5.Rmd` document. We ran two different power analyses, one for each outcome variable. We set the power threshold for our experiment to 90%.
+We ran a power simulation to inform our choice of sample size. All assumptions and details on the procedure can be found in the `power_Exp6.Rmd` document. We used previous experiments and estimates of our models to inform our choice of parameter values. 
 
-The power simulation for `accuracy` suggested that for 80 participants, we would have a power of at least 90% for the interaction effect. The simulation for `competence` suggested that with already 40 participants, we would detect an interaction, but only with 60 participants we also detect an effect of convergence.
+We ran two different power analyses, one for each outcome variable. We set the power threshold for our experiment to 90%. 
 
-However, due to uncertainty about our assumptions and because we are anticipating failed attention checks, *we will recruit a sample of `200` participants*.
+The power simulation for `accuracy` suggested that for 140 participants we would cross the power threshold of 90% for the interaction effect (power = 0.928). The simulation for `competence` suggested that with 300 participants, we would detect an interaction with a power of 87% (power = 0.872). 
 
+Due to budget constraints, we will consider a sample of 300 participants as good enough in terms of power. 
 
+![Results of power simulation for competence](power_Exp6_files/figure-html/plot-power-accuracy-1.png) 
 
-
+![Results of power simulation for competence](power_Exp6_files/figure-html/plot-power-competence-1.png) 
 
 ## Appendix
 

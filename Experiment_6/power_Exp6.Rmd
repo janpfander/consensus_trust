@@ -131,13 +131,49 @@ Other terms:
 
 The parameters we set differ with regard to our outcome variables. Later when we do the actual simulation, we will set two different sets of parameters, one for `accuracy` and one for `competence`, respectively. The steps before we introduce functions serve demonstration purposes only, so we'll just focus on `accuracy`.
 
-We set the parameters for convergence and the by-participant random effects based on experiment 4.
+We set the parameters for the by-participant random effects and the error term based on the estimates from experiment 4.
 
-We further use the modeling results to produce the expected difference between the categories. 
+```{r, message=FALSE}
+# read data
+d <- read_csv("../experiment_4/data/cleaned.csv") 
 
-```{r}
+# get random effects for accuracy
+
+# calculate model
+model_accuracy <- lmer(accuracy ~ convergence + (1 + convergence | id), 
+                                 data = d)
+
+# store estimates with according parameters in list
+random_effects_accuracy <- tidy(model_accuracy, effects = "ran_pars") %>% 
+  mutate(parameter = case_when(term == "sd__(Intercept)" ~ "subj_0", 
+                               term == "cor__(Intercept).convergence" ~ "subj_rho",
+                               term == "sd__convergence" ~ "subj_c", 
+                               term == "sd__Observation" ~ "sigma")
+         ) %>% 
+  select(parameter, estimate)
+
+# get random effects for competence
+
+# calculate model
+model_competence <- lmer(competence ~ convergence + 
+                           (1 + convergence | id), data = d)
+
+# store estimates with according parameters in list
+random_effects_competence <- tidy(model_competence, effects = "ran_pars") %>% 
+  mutate(parameter = case_when(term == "sd__(Intercept)" ~ "subj_0", 
+                               term == "cor__(Intercept).convergence" ~ "subj_rho",
+                               term == "sd__convergence" ~ "subj_c", 
+                               term == "sd__Observation" ~ "sigma")
+         ) %>% 
+  select(parameter, estimate)
+
+```
+
+We further use the modeling results to set the parameters for all fixed effects.  
+
+```{r, message=FALSE}
 # data from model
-model_data <- read_csv("../experiment_4/data/model_3_options.csv") %>% 
+model_data <- read_csv("../experiment_4/data/model_vary_options_3_sample.csv") %>% 
   filter(options %in% c(3, 10)) %>% 
   mutate(
     # make numeric version of convergence
@@ -154,47 +190,72 @@ model_data <- read_csv("../experiment_4/data/model_3_options.csv") %>%
          )
 
 # we run the model on averages from different iterations
-model_accuracy <- lm(average_accuracy ~ convergence + options + convergence*options, data = model_data) %>% 
-  tidy() 
 
-model_competence <- lm(average_relative_competence ~ convergence + options + convergence*options, data = model_data) %>% 
-  tidy()
+# for accuracy
+model_accuracy <- lm(average_accuracy ~ convergence + options + convergence*options, data = model_data)
+  
+# store estimates with according parameters in list
+fixed_effects_accuracy <- tidy(model_accuracy) %>% 
+  mutate(parameter = case_when(term == "(Intercept)" ~ "beta_0", 
+                               term == "convergence" ~ "beta_c",
+                               term == "options10" ~ "beta_n",
+                               term == "convergence:options10" ~ "beta_cn")
+         ) %>% 
+  select(parameter, estimate)
+
+# for competence
+model_competence <- lm(average_relative_competence ~ convergence + options + convergence*options, data = model_data) 
+
+# store estimates with according parameters in list
+fixed_effects_competence <- tidy(model_competence) %>% 
+  mutate(parameter = case_when(term == "(Intercept)" ~ "beta_0", 
+                               term == "convergence" ~ "beta_c",
+                               term == "options10" ~ "beta_n",
+                               term == "convergence:options10" ~ "beta_cn")
+         ) %>% 
+  select(parameter, estimate)
 ```
-
 
 ```{r}
 # parameters for modelling accuracy 
-beta_0   <- 20 # intercept
-beta_c   <- 10 # effect of convergence when conflict of interest
-beta_i   <- 5 # effect of independence (compared to conflict of interest)
-beta_ci  <- 5 # difference in effect of convergence when number of options = 10 (compared to conflict of interest)
-subj_0   <- 10 # by-subject random intercept sd
-subj_c   <- 5 # by-subject random slope sd
-subj_rho <- .2 # correlation between intercept and slope 
-sigma    <- 5 # residual (error) sd (i.e. all varition that the model cannot account for)
+parameters_accuracy <- bind_rows(random_effects_accuracy, fixed_effects_accuracy)
+# split() creates a list using the values in a dataframe column
+parameters_accuracy <- split(parameters_accuracy$estimate, parameters_accuracy$parameter)
+
+# parameters for modelling competence 
+parameters_competence <- bind_rows(random_effects_competence, fixed_effects_competence)
+parameters_competence <- split(parameters_competence$estimate, parameters_competence$parameter)
+
+parameters_accuracy
+parameters_competence
 ```
 
-We store a complete list of parameters in a list so that we can call them for functions later.
+To these effect parameters, we have to add a set of additional parameters. We store a complete list of parameters in a list so that we can call them for functions later. Note that here we'll only set parameters for accuracy, for demonstration purposes. We'll do the same for competence later when running the actual simulations. 
 
 ```{r}
+# store parameters in separate objects to be able to call them for demonstration purposes
+# (for accuracy only)
+beta_0   <- parameters_accuracy$beta_0 # intercept
+beta_c   <- parameters_accuracy$beta_c # effect of convergence when 3 choice options
+beta_n   <- parameters_accuracy$beta_n # effect of 10 options (vs. 3) when convergence = 0
+beta_cn  <- parameters_accuracy$beta_cn # difference in effect of convergence when 10 options (vs. 3)
+subj_0   <- parameters_accuracy$subj_0 # by-subject random intercept sd
+subj_c   <- parameters_accuracy$subj_c # by-subject random slope sd
+subj_rho <- parameters_accuracy$subj_rho # correlation between intercept and slope 
+sigma    <- parameters_accuracy$sigma # residual (error) sd (i.e. all varition that the model cannot account for)
+
 # complete list of parameters (including some that will be introduced later)
-parameters <- list(
+parameters <- c(
+  parameters_accuracy,
+  list(
   # outcome variable
   outcome = "accuracy", # takes names as input, e.g. "accuracy"
   # parameters for size of data frame
-  n_subj = 10,              # n participants
+  n_subj = 100,              # n participants
   levels_convergence = 0:3,  # levels of convergence
-  n_stimuli_per_level = 2, # n stimuli per participant
-  # parameters for modelling outcome variable
-  beta_0 = 40,   # intercept
-  beta_c = 10,   # effect of convergence, 
-  beta_i = 5,    # # effect of independence (compared to conflict of interest)
-  beta_ci = 5, # difference in effect of convergence when independence (compared to conflict of interest)
-  subj_0 = 10,   # by-subject random intercept sd
-  subj_c = 5,   # by-subject random slope sd
-  subj_rho = 0.5, # correlation between intercept and slope 
-  sigma = 10     # residual (error) sd (i.e. all varition that the model cannot account for)
-)
+  n_stimuli_per_level = 2 # n stimuli per participant
+  )
+  )
 ```
 
 ## 2. Simulate a single sample
@@ -249,10 +310,12 @@ subjects <- data.frame(
   # add by participant pair of random effects
   subject_rfx, 
   # add `independence` condition
-  independence = rep(c("conflict", "independent"), length.out = n_subj)
-  ) %>% 
+  number_options = rep(c("3", "10"), length.out = n_subj)
+) %>% 
   # make a numeric variable to be able to generate competence
-  mutate(independence_num = ifelse(independence == "conflict", 0, 1))
+  mutate(number_options_num = ifelse(number_options == "3", 0, 1), 
+         # relevel the number_options variable
+         number_options = relevel(as.factor(number_options), ref = "3"))
 ```
 
 Check how simulated values compare to the parameters we set earlier.
@@ -279,7 +342,7 @@ trials <- expand_grid(subjects, stimuli)  %>%
   mutate(e_ss = rnorm(nrow(.), mean = 0, sd = sigma))
 ```
 
-#### Calculate accuracy values
+### Calculate accuracy values
 
 Our data frame now contains all the information to calculate the accuracy values. Note that our`beta_` parameters are not part of the data frame, but they exist in the environment since we defined them earlier. Once we have added `accuracy` and we removed the helper variables we don't need anymore, we have the data frame that we can run our statistical analysis on.
 
@@ -287,39 +350,39 @@ We truncate the simulated `accuracy` values so that they remain on the scale fro
 
 ```{r}
 dat_sim <- trials %>%
-  mutate(accuracy = beta_0 + SU_0 + (beta_c + SU_c)*convergence + beta_i*independence_num + beta_ci*convergence*independence_num + e_ss,
+  mutate(accuracy = beta_0 + SU_0 + (beta_c + SU_c)*convergence + beta_n*number_options_num + beta_cn*convergence*number_options_num + e_ss,
          # truncate accuracy values so that they lie between 0 and 100 only
          accuracy = case_when(accuracy < 0 ~ 0, 
                               accuracy > 100 ~ 100,
                               TRUE ~ accuracy)) %>% 
   # retain only variables of interest
-  select(id, convergence, independence, accuracy)
+  select(id, convergence, number_options, accuracy)
 ```
 
 Plot the data to check values.
 
 ```{r}
 # independent condition
-independent_plot <- ggplot(dat_sim %>% filter(independence == "independent"), 
+options_10_plot <- ggplot(dat_sim %>% filter(number_options == "10"), 
        aes(x = as.factor(convergence), y = accuracy, 
            color = as.factor(convergence)
        )
 ) +
   # predicted means
   geom_hline(yintercept = beta_0) +
-  geom_hline(yintercept = (beta_0 + beta_c + beta_ci)) +
-  geom_hline(yintercept = (beta_0 + 2*(beta_c + beta_ci))) +
-  geom_hline(yintercept = (beta_0 + 3*(beta_c + beta_ci))) +
+  geom_hline(yintercept = (beta_0 + beta_c + beta_cn)) +
+  geom_hline(yintercept = (beta_0 + 2*(beta_c + beta_cn))) +
+  geom_hline(yintercept = (beta_0 + 3*(beta_c + beta_cn))) +
   # actual data
   geom_violin(alpha = 0, show.legend = FALSE) +
   stat_summary(fun = mean, geom="crossbar", show.legend = FALSE) +
   scale_color_viridis_d() +
   ggtitle("Predicted versus simulated values") + 
-  facet_wrap(~independence) +
-  ylim(0, 100)
+  facet_wrap(~number_options) +
+  ylim(0, 120)
 
 # conflict condition
-conflict_plot <-ggplot(dat_sim %>% filter(independence == "conflict"), 
+options_3_plot <-ggplot(dat_sim %>% filter(number_options == "3"), 
        aes(x = as.factor(convergence), y = accuracy, 
            color = as.factor(convergence)
            )
@@ -334,10 +397,10 @@ conflict_plot <-ggplot(dat_sim %>% filter(independence == "conflict"),
   stat_summary(fun = mean, geom="crossbar", show.legend = FALSE) +
   scale_color_viridis_d() +
   ggtitle("Predicted versus simulated values")  + 
-  facet_wrap(~independence) +
-  ylim(0, 100)
+  facet_wrap(~number_options) +
+  ylim(0, 120)
 
-independent_plot + conflict_plot
+options_10_plot + options_3_plot
 ```
 
 ### Data generating function
@@ -356,8 +419,8 @@ draw_single_sample <- function(
   # parameters for modelling outcome variable
   beta_0,   # intercept
   beta_c,   # effect of convergence 
-  beta_i = 5,    # # effect of independence (compared to conflict of interest)
-  beta_ci = 5, # difference in effect of convergence when independence (compared to conflict of interest)
+  beta_n,  # effect of independence (compared to conflict of interest)
+  beta_cn,  # difference in effect of convergence when independence (compared to conflict of interest)
   subj_0,   # by-subject random intercept sd
   subj_c,   # by-subject random slope sd
   subj_rho, # correlation between intercept and slope 
@@ -392,10 +455,13 @@ draw_single_sample <- function(
     # add by participant pair of random effects
     subject_rfx,
     # add `independence` condition
-    independence = rep(c("conflict", "independent"), length.out = n_subj)
+    number_options = rep(c("3", "10"), length.out = n_subj)
     ) %>% 
     # make a numeric variable to be able to generate competence
-    mutate(independence_num = ifelse(independence == "conflict", 0, 1))
+    mutate(number_options_num = ifelse(number_options == "3", 0, 1), 
+           # relevel the number_options variable
+           number_options = relevel(as.factor(number_options), ref = "3")
+           )
   
   
   # 3. create trials data (subjects x stimuli) & simulate outcome variables
@@ -407,10 +473,10 @@ draw_single_sample <- function(
     mutate(e_ss = rnorm(nrow(.), mean = 0, sd = sigma)) %>%
     # simulate outcome variable
     mutate(outcome = beta_0 + SU_0 + (beta_c + SU_c)*convergence + 
-             beta_i*independence_num + beta_ci*convergence*independence_num + e_ss, 
+             beta_n*number_options_num + beta_cn*convergence*number_options_num + e_ss, 
            outcome_variable = {{outcome}}) %>% 
     # retain only variables of interest
-    select(id, convergence, independence, outcome, outcome_variable)
+    select(id, convergence, number_options, outcome, outcome_variable)
   
   # Truncate results so that we only get values on the correct scale
   if (outcome == "accuracy") {
@@ -436,7 +502,7 @@ draw_single_sample <- function(
   return(sample)
 }
 
-# # You can test the function using the commented code below 
+# # You can test the function using the commented code below
 # # (un-comment by highlighting, then command+shit+c)
 # test <- do.call(draw_single_sample, parameters)
 ```
@@ -446,8 +512,8 @@ draw_single_sample <- function(
 We run a linear mixed model using the `lme4` package on our simulated sample.
 
 ```{r}
-mod_sim <- lmer(accuracy ~ convergence + independence + 
-                  independence*convergence + (1 + convergence | id), 
+mod_sim <- lmer(accuracy ~ convergence + number_options + 
+                  number_options*convergence + (1 + convergence | id), 
                 dat_sim)
 summary(mod_sim)
 ```
@@ -459,8 +525,8 @@ We use the `broom.mixed` package to get a tidy table of the results. Below, we a
 model_estimates <- broom.mixed::tidy(mod_sim) %>% 
   mutate_if(is.numeric, round, 3) %>%
   mutate(
-    parameter = c("beta_0", "beta_c", "beta_i", "beta_ci", "subj_0", "subj_rho", "subj_c", "sigma"),
-    value = c(beta_0, beta_c, beta_i, beta_ci, subj_0, subj_rho, subj_c, sigma),
+    parameter = c("beta_0", "beta_c", "beta_n", "beta_cn", "subj_0", "subj_rho", "subj_c", "sigma"),
+    value = c(beta_0, beta_c, beta_n, beta_cn, subj_0, subj_rho, subj_c, sigma),
   ) %>%
   select(effect:term, parameter, value, estimate:p.value)
 
@@ -480,8 +546,8 @@ We are interested in the p.value of three effects: `convergence`, `independent` 
 alpha <- 0.05
 
 # estimates to extract
-estimates = c("convergence", "independenceindependent", 
-              "convergence:independenceindependent")
+estimates = c("convergence", "number_options10", 
+              "convergence:number_options10")
 
 # check significance and store result
 significance <- model_estimates %>% 
@@ -510,15 +576,15 @@ estimate_model <- function(alpha = 0.05, ...) {
   sample <- draw_single_sample(...)
   
   # estimate model for the drawn sample
-  model_estimates <- lmer(outcome ~ convergence + independence + 
-                            independence*convergence + (1 + convergence | id),
+  model_estimates <- lmer(outcome ~ convergence + number_options + 
+                            number_options*convergence + (1 + convergence | id),
                           sample) %>% 
     # put into tidy output
     broom.mixed::tidy()
   
   # estimates to extract
-  estimates = c("convergence", "independenceindependent", 
-                "convergence:independenceindependent")
+  estimates = c("convergence", "number_options10", 
+              "convergence:number_options10")
   
   # check significance and store the result
   significance <- model_estimates %>% 
@@ -706,50 +772,36 @@ For accuracy.
 
 ```{r}
 # list of parameters for accuracy
-parameters_accuracy <- list(
-  # outcome variable
-  outcome = "accuracy", # takes names as input, e.g. "accuracy"
-  # parameters for size of data frame
-  sample_sizes  =  seq(from = 20, to = 200, by = 20), # different n's to simulate power for 
-  levels_convergence = 0:3,  # levels of convergence
-  n_stimuli_per_level = 2, # n stimuli per participant
-  # parameters for modelling outcome variable
-  beta_0 = 40,   # intercept
-  beta_c = 5,   # effect of convergence 
-  beta_i = 5,    # effect of independence (compared to conflict of interest)
-  beta_ci = 5, # difference in effect of convergence when independence (compared to conflict of interest)
-  subj_0 = 10,   # by-subject random intercept sd
-  subj_c = 5,   # by-subject random slope sd
-  subj_rho = -0.5, # correlation between intercept and slope 
-  sigma = 10,     # residual (error) sd (i.e. all varition that the model cannot account for)
-  # number of iterations (per sample size)
-  iterations = 1000
-)
+parameters_accuracy <- c(parameters_accuracy, 
+                         list(
+                           # outcome variable
+                           outcome = "accuracy", # takes names as input, e.g. "accuracy"
+                           # parameters for size of data frame
+                           sample_sizes  =  seq(from = 20, to = 200, by = 20), # different n's to simulate power for 
+                           levels_convergence = 0:3,  # levels of convergence
+                           n_stimuli_per_level = 2, # n stimuli per participant
+                           # number of iterations (per sample size)
+                           iterations = 1000
+                           )
+                         )
 ```
 
 For competence.
 
 ```{r}
 # list of parameters for competence
-parameters_competence <- list(
-  # outcome variable
-  outcome = "competence", # takes names as input, e.g. "accuracy"
-  # parameters for size of data frame
-  sample_sizes  =  seq(from = 20, to = 300, by = 20), # different n's to simulate power for 
-  levels_convergence = 0:3,  # levels of convergence
-  n_stimuli_per_level = 2, # n stimuli per participant
-  # parameters for modelling outcome variable
-  beta_0 = 3.5,   # intercept
-  beta_c = 0.25,   # effect of convergence 
-  beta_i = 0.25,    # # effect of independence (compared to conflict of interest)
-  beta_ci = 0.5, # difference in effect of convergence when independence (compared to conflict of interest)
-  subj_0 = 1,   # by-subject random intercept sd
-  subj_c = 0.25,   # by-subject random slope sd
-  subj_rho = -0.5, # correlation between intercept and slope 
-  sigma = 1,     # residual (error) sd (i.e. all varition that the model cannot account for)
-  # number of iterations (per sample size)
-  iterations = 1000
-)
+parameters_competence <- c(parameters_competence, 
+                         list(
+                           # outcome variable
+                           outcome = "competence", # takes names as input, e.g. "competence"
+                           # parameters for size of data frame
+                           sample_sizes  =  seq(from = 20, to = 300, by = 20), # different n's to simulate power for 
+                           levels_convergence = 0:3,  # levels of convergence
+                           n_stimuli_per_level = 2, # n stimuli per participant
+                           # number of iterations (per sample size)
+                           iterations = 1000
+                           )
+                         )
 ```
 
 ### Execute functions
@@ -818,5 +870,22 @@ competence_plot
 accuracy_plot <- plot_power(power_accuracy)
 accuracy_plot
 ```
+
+### Calculate precise sample size threshold
+
+```{r}
+# accuracy
+power_accuracy %>% filter(term == "convergence:number_options10" & 
+                            power >= 0.9) %>%
+  arrange(power) %>% 
+  slice(1)
+```
+
+```{r}
+# competence
+power_competence %>% filter(term == "convergence:number_options10") %>%
+  arrange(desc(power)) 
+```
+
 
 ## References
