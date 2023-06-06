@@ -50,27 +50,30 @@ plot_theme <- theme_minimal(base_size = 12) +
 ### Read data
 ```{r, message=FALSE}
 # read data
-d <- read_csv("./data/cleaned.csv")
+d <- read_csv("./data/cleaned.csv") %>% 
+  # make number_options a factor
+  mutate(number_options = relevel(as.factor(number_options), ref = "three"))
 ```
 
-### H1a: Participants perceive an estimate of an independent informant as more accurate the more it converges with the estimates of other informants.
+### H1a: In the three options condition, participants perceive an estimate of an independent informant as more accurate the more it converges with the estimates of other informants.
 
-To test this hypothesis, we only consider participants assigned to the `independent` condition.
+To test this hypothesis, we only consider participants assigned to the `3` options condition.
 
-We use a linear mixed effect model with random intercept and random slope per participant.
+We use a linear mixed effect model with random intercept and random slope per participant. Should this model yield convergence issues, we will use a model with random intercept only.
 
-In all our models we treat `convergence` as a continuous variable. We will, however, include robustness checks where we treat convergence as a categorical variable. 
+In all our models we treat `convergence` as a continuous variable. We will, however, include robustness checks where we treat convergence as a categorical variable, allowing to inspect difference between different levels.
 
 ```{r, warning=FALSE, message=FALSE}
 # models for accuracy
 
 # random intercept and slope by participants
-model_accuracy_independent <- lmer(accuracy ~ convergence + (1 + convergence | id), 
-                       data = d %>% filter(independence == "independent"))
+model_accuracy_3options <- lmer(accuracy ~ convergence + (1 + convergence | id), 
+                       data = d %>% filter(number_options == "three"))
+
 ```
 
 
-### H1b: Participants perceive an independent informant as more competent the more their estimate converges with the estimates of other informants.
+### H1b:  In the three options condition, participants perceive an independent informant as more competent the more their estimate converges with the estimates of other informants.
 
 We will proceed in the same way for `competence` as we did for `accuracy` above.
 
@@ -78,14 +81,14 @@ We will proceed in the same way for `competence` as we did for `accuracy` above.
 # models for competence
 
 # random intercept and slope by participants
-model_competence_independent <- lmer(competence ~ convergence + 
+model_competence_3options <- lmer(competence ~ convergence + 
                            (1 + convergence | id), 
-                         data = d %>% filter(independence == "independent"))
+                         data = d %>% filter(number_options == "three"))
 ```
 
-### H2a: The effect of convergence on accuracy (H1a) is more positive in a context where informants are independent compared to when they are biased (i.e. share a conflict of interest to pick a given answer). 
+### H2a: The effect of convergence on accuracy (H1a) is more positive in a context when informants can choose among ten response options compared to when they can choose among only three. 
 
-To test this hypothesis, we only consider the full data.
+To test this hypothesis, we consider the full data.
 
 The resulting estimate of the interaction term will provide the test for our hypothesis. 
 
@@ -93,41 +96,67 @@ The resulting estimate of the interaction term will provide the test for our hyp
 # models for accuracy
 
 # random intercept and slope by participants
-model_accuracy <- lmer(accuracy ~ convergence + independence + 
-                            independence*convergence + (1 + convergence | id), 
+model_accuracy <- lmer(accuracy ~ convergence + number_options + 
+                            number_options*convergence + (1 + convergence | id), 
                        data = d)
 ```
 
+  
+### H2b: The effect of convergence on competence (H1b) is more positive in a context when informants can choose among ten response options compared to when they can choose among only three. 
 
-### H2b: The effect of convergence on competence (H1b) is more positive in a context where informants are independent compared to when they are biased (i.e. share a conflict of interest to pick a given answer).
-
-To test this hypothesis, we only consider the full data.
+To test this hypothesis, we consider the full data.
 
 The resulting estimate of the interaction term will provide the test for our hypothesis. 
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # models for competence
 
 # random intercept and slope by participants
-model_competence <- lmer(competence ~ convergence + independence + 
-                            independence*convergence + (1 + convergence | id), 
+model_competence <- lmer(competence ~ convergence + number_options + 
+                            number_options*convergence + (1 + convergence | id), 
                        data = d)
-
 ```
 
 Show all results
 ```{r, echo=FALSE}
-models <- list("Accuracy (independent only)" = model_accuracy_independent, 
-               "Competence (independent only)" = model_competence_independent, 
+models <- list("Accuracy (3 options condition)" = model_accuracy_3options, 
+               "Competence (3 options condition)" = model_competence_3options, 
                "Accuracy" = model_accuracy, 
                "Competence" = model_competence)
 modelsummary::modelsummary(models, stars = TRUE)
 ```
 
+## Research question 
 
-# Robustness checks
+### RQ1: Within the 10 choice options condition, is the effect of convergence more positive for the set of stimuli with greater distance?
 
-In the models above, we treated convergence as a continuous variable. Based on the different levels, we will build a categorical variable, `convergence_categorical`. 
+```{r, warning=FALSE, message=FALSE}
+# models for accuracy
+
+# random intercept and slope by participants
+model_accuracy_10options <- lmer(accuracy ~ convergence + stimuli_10_version + 
+                            stimuli_10_version*convergence + (1 + convergence | id), 
+                       data = d)
+
+
+# models for competence
+
+# random intercept and slope by participants
+model_competence_10options <- lmer(competence ~ convergence + stimuli_10_version + 
+                            stimuli_10_version*convergence + (1 + convergence | id), 
+                       data = d)
+
+```
+
+```{r}
+models <- list("Accuracy (10 options conditions)" = model_accuracy_10options, 
+               "Competence (10 options conditions)" = model_competence_10options)
+modelsummary::modelsummary(models, stars = TRUE)
+```
+
+
+
+### Plots
 
 ```{r, echo=FALSE}
 # make a categorical variable from `convergence`
@@ -141,20 +170,13 @@ d <- d %>%
          )
 
 levels(d$convergence_categorical)
-  
 ```
 
-
-We run the same models outlined in the hypotheses section, but replacing `convergence` with `convergence_categorical`. This also allows us to inspect heterogeniety in differences between levels (with respect to the baseline, i.e. "opposing majority"). 
-
-
-### Plots
-
-#### Independence Condition only
+#### Three options only
 
 ```{r, echo=FALSE}
 # plot for accuracy
-plot_accuracy <- ggplot(d %>% filter(independence == "independent"),
+plot_accuracy <- ggplot(d %>% filter(number_options == "three"),
        aes(x = convergence_categorical, y = accuracy, fill = convergence_categorical)) +
   geom_half_violin(position = position_nudge(x = -.2),
                    adjust=2, alpha = .8,
@@ -172,7 +194,7 @@ plot_accuracy <- ggplot(d %>% filter(independence == "independent"),
 
 ```{r, echo=FALSE}
 # plot for competence
-plot_competence <- ggplot(d %>% filter(independence == "independent"),
+plot_competence <- ggplot(d %>% filter(number_options == "three"),
        aes(x = convergence_categorical, y = competence, fill = convergence_categorical)) +
   geom_half_violin(position = position_nudge(x = -.2),
                    adjust=2, alpha = .8,
@@ -197,7 +219,7 @@ plot_accuracy + plot_competence
 ```{r, echo=FALSE}
 # plot for accuracy
 plot_accuracy <- ggplot(d,
-       aes(x = convergence_categorical, y = accuracy, fill = independence)) +
+       aes(x = convergence_categorical, y = accuracy, fill = number_options)) +
   geom_half_violin(position = position_nudge(x = -.2),
                    adjust=2, alpha = .4,
                    side = "l") +
@@ -214,7 +236,7 @@ plot_accuracy <- ggplot(d,
 ```{r, echo=FALSE}
 # plot for competence
 plot_competence <- ggplot(d,
-       aes(x = convergence_categorical, y = competence, fill = independence)) +
+       aes(x = convergence_categorical, y = competence, fill = number_options)) +
   geom_half_violin(position = position_nudge(x = -.2),
                    adjust=2, alpha = .4,
                    side = "l") +

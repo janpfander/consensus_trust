@@ -7,7 +7,8 @@ output:
     keep_md: yes
 ---
 
-```{r packages, message=FALSE}
+
+```r
 library(tidyverse)     # create plots with ggplot, manipulate data, etc.
 library(broom.mixed)   # convert regression models into nice tables
 library(modelsummary)  # combine multiple regression models into a single table
@@ -19,39 +20,76 @@ library(kableExtra)    # for tables
 ```
 
 ## Import data
-```{r import, message=FALSE}
+
+```r
 d <- read_csv("./data/qualtrics.csv")
 names(d)
-
 ```
 
-```{r}
+```
+##  [1] "StartDate"             "EndDate"               "Status"               
+##  [4] "IPAddress"             "Progress"              "Duration (in seconds)"
+##  [7] "Finished"              "RecordedDate"          "ResponseId"           
+## [10] "RecipientLastName"     "RecipientFirstName"    "RecipientEmail"       
+## [13] "ExternalReference"     "LocationLatitude"      "LocationLongitude"    
+## [16] "DistributionChannel"   "UserLanguage"          "consent"              
+## [19] "attention"             "0_acc_a_1"             "0_com_a"              
+## [22] "0_acc_b_1"             "0_com_b"               "1_acc_a_1"            
+## [25] "1_com_a"               "1_acc_b_1"             "1_com_b"              
+## [28] "2_acc_a_1"             "2_com_a"               "2_acc_b_1"            
+## [31] "2_com_b"               "3_acc_a_1"             "3_com_a"              
+## [34] "3_acc_b_1"             "3_com_b"               "Q1"                   
+## [37] "gender"                "age"                   "education"            
+## [40] "PROLIFIC_PID"          "number"                "counter"
+```
+
+
+```r
 # delete first two rows
 d <- d %>% 
   slice(3: nrow(.)) 
 ```
 
 ## Attention check
-```{r attention}
+
+```r
 # attention check
 # to see different answers given (i.e.levels), transform into factor
 d$attention <- as.factor(d$attention)
 # check levels to see different answer types
 levels(d$attention) 
+```
 
+```
+## [1] "60dc963e81e24696fb377f61" "I  pay attention"        
+## [3] "i pay attention"          "I pay attention"         
+## [5] "I pay attention."         "in the box"
+```
+
+```r
 # We filter out two participants 
 table(d$attention)
 ```
 
+```
+## 
+## 60dc963e81e24696fb377f61         I  pay attention          i pay attention 
+##                        1                        1                       11 
+##          I pay attention         I pay attention.               in the box 
+##                      285                        1                        1
+```
+
 There is one clearly failed attention check that we remove. 
 
-```{r}
+
+```r
 # filter to only valid attention check responses
 d <- d %>% filter(str_detect(attention, "attention"))
 ```
 
 ## Re-shape data
-```{r}
+
+```r
 # clean and re-shape
 d <- d %>% 
   # add an easy to read participant identifier
@@ -83,6 +121,7 @@ d <- d %>%
 
 ## Export data
 
-```{r}
+
+```r
 write_csv(d, "data/cleaned.csv")
 ```
