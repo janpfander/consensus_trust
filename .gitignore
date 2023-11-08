@@ -1,4 +1,14 @@
+# R stuff
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
+
+
+# knitr and caching stuff
+*output
+**/*_files/
+**/sim*
+*.docx
+*.tex
+*.log

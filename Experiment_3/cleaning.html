@@ -469,13 +469,16 @@ baseline category is <em>convergence</em>, which will yield a negative
 estimate for the effect of <em>no convergence</em>. We want to have the
 positive effect of <em>convergence</em> instead. Likewise, we recode the
 levels of the <code>independence</code> variable to make sure the effect
-goes into the right direction (i.e. the effec of <em>independence</em>
+goes into the right direction (i.e. the effect of <em>independence</em>
 compared to <em>conflict of interest</em>).</p>
 <pre class="r"><code>d &lt;- d %&gt;%
-  mutate(convergence = as.factor(convergence),
-         convergence = fct_relevel(convergence, &quot;div&quot;, &quot;conv&quot;),
-         independence = as.factor(independence),
-         independence = fct_relevel(independence, &quot;confl&quot;, &quot;indep&quot;)
+  mutate(
+    convergence = ifelse(convergence == &quot;conv&quot;, &quot;convergent&quot;, &quot;divergent&quot;),
+    convergence = as.factor(convergence),
+    convergence = fct_relevel(convergence, &quot;divergent&quot;, &quot;convergent&quot;),
+    independence = ifelse(independence == &quot;indep&quot;, &quot;independent&quot;, &quot;conflict&quot;),
+    independence = as.factor(independence),
+    independence = fct_relevel(independence, &quot;conflict&quot;, &quot;independent&quot;)
          )</code></pre>
 </div>
 <div id="export-data" class="section level2">

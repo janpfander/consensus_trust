@@ -125,10 +125,12 @@ Lastly, we recode the `convergence` variable. For now, the baseline category is 
 ```r
 # recode convergence
 d <- d %>%
-  mutate(convergence = as.factor(convergence),
-         convergence = fct_relevel(convergence, "noconv", "conv"),
-         number = as.factor(number),
-         number = fct_relevel(number, "small", "large"))
+  mutate(
+    convergence = ifelse(convergence == "conv", "convergent", "divergent"),
+    convergence = as.factor(convergence),
+    convergence = fct_relevel(convergence, "divergent", "convergent"),
+    number = as.factor(number),
+    number = fct_relevel(number, "small", "large"))
 ```
 
 ## Export data

@@ -3,10 +3,10 @@ title: 'Preregistration Experiment 6: Is convergence more trustworthy when there
 author: "Jan Pfänder, Hugo Mercier"
 date: "2023-03-08"
 output:
-  pdf_document: 
-      keep_md: yes
   html_document:
     keep_md: yes
+  pdf_document: 
+      keep_md: yes
 ---
 
 
@@ -32,10 +32,10 @@ No data has been collected yet.
 
 Participants see eight situtations in which three advisors give investment recommendations. They are then asked to judge one advisor's accuracy and competence. We will manipulate two factors: convergence (four levels, within participants) and number of options (two levels, between participants).
 
-> **Introduction for participants:** *"To be able to understand the task, please read the following instructions carefully: Some people are playing games in which they have to select the correct answer among three answers. You will see the results of several of these games. Each game is different, with different solutions and involving different players. All players answer independently of each other. At first, you have no idea how competent each individual player is: they might be completely at chance, or be very good at the task. It's also possible that some players are really good while others are really bad. Some games might be difficult while others are easy. Your task will be to evaluate the performance of one of the players based on what everyone's answers are."*
+> **Introduction for participants:** *"To be able to understand the task, please read the following instructions carefully: Some people are playing games in which they have to select the correct answer among various options. You will see the results of several of these games. Each game is different, with different solutions and involving different players. All players answer independently of each other. At first, you have no idea how competent each individual player is: they might be completely at chance, or be very good at the task. It's also possible that some players are really good while others are really bad. Some games might be difficult while others are easy. Your task will be to evaluate the performance of one of the players based on what everyone's answers are."*
 
 
-![An example of a stimulus for the majority condition](figures/example_stimulus.png) 
+![An example of a stimulus for the majority condition](figures/example_stimulus.png)
 
 **Convergence**. Convergence varies by the ratio of players choosing the same response as the focal player (i.e. the one that participants evaluate). The levels of convergence are: (i) consensus, where all three players pick the same option [`coded value = 3`]; (ii) majority, where either the third or second player picks the same option as the first player [`coded value = 2`]; (iii) dissensus, where all three players pick different options [`coded value = 1`]; (iv) majority against the focal player's estimate, where the second and third player pick the same option, but one that is different from the first player's choice [`coded value = 0`]. In our analysis, we treat convergence as a continuous variable, assigning the values in squared parenthesis.
 
@@ -239,9 +239,9 @@ The power simulation for `accuracy` suggested that for 140 participants we would
 
 Due to budget constraints, we will consider a sample of 300 participants as good enough in terms of power. 
 
-![Results of power simulation for competence](power_Exp6_files/figure-html/plot-power-accuracy-1.png) 
+![Results of power simulation for competence](power_Exp6_files/figure-html/plot-power-accuracy-1.png)
 
-![Results of power simulation for competence](power_Exp6_files/figure-html/plot-power-competence-1.png) 
+![Results of power simulation for competence](power_Exp6_files/figure-html/plot-power-competence-1.png)
 
 ## Appendix
 

@@ -93,14 +93,17 @@ ggplot(d, aes(x = accuracy)) +
 
 ## Recode factors
 
-Lastly, we recode the `convergence` variable. For now, the baseline category is _convergence_, which will yield a negative estimate for the effect of _no convergence_. We want to have the positive effect of _convergence_ instead. Likewise, we recode the levels of the `independence` variable to make sure the effect goes into the right direction (i.e. the effec of _independence_ compared to _conflict of interest_).
+Lastly, we recode the `convergence` variable. For now, the baseline category is _convergence_, which will yield a negative estimate for the effect of _no convergence_. We want to have the positive effect of _convergence_ instead. Likewise, we recode the levels of the `independence` variable to make sure the effect goes into the right direction (i.e. the effect of _independence_ compared to _conflict of interest_).
 
 ```{r}
 d <- d %>%
-  mutate(convergence = as.factor(convergence),
-         convergence = fct_relevel(convergence, "div", "conv"),
-         independence = as.factor(independence),
-         independence = fct_relevel(independence, "confl", "indep")
+  mutate(
+    convergence = ifelse(convergence == "conv", "convergent", "divergent"),
+    convergence = as.factor(convergence),
+    convergence = fct_relevel(convergence, "divergent", "convergent"),
+    independence = ifelse(independence == "indep", "independent", "conflict"),
+    independence = as.factor(independence),
+    independence = fct_relevel(independence, "conflict", "independent")
          )
 ```
 

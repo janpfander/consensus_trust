@@ -450,10 +450,12 @@ the <code>number</code> variable so that we get the effect of
 <em>large</em> (i.e. put <em>small</em> as baseline category).</p>
 <pre class="r"><code># recode convergence
 d &lt;- d %&gt;%
-  mutate(convergence = as.factor(convergence),
-         convergence = fct_relevel(convergence, &quot;noconv&quot;, &quot;conv&quot;),
-         number = as.factor(number),
-         number = fct_relevel(number, &quot;small&quot;, &quot;large&quot;))</code></pre>
+  mutate(
+    convergence = ifelse(convergence == &quot;conv&quot;, &quot;convergent&quot;, &quot;divergent&quot;),
+    convergence = as.factor(convergence),
+    convergence = fct_relevel(convergence, &quot;divergent&quot;, &quot;convergent&quot;),
+    number = as.factor(number),
+    number = fct_relevel(number, &quot;small&quot;, &quot;large&quot;))</code></pre>
 </div>
 <div id="export-data" class="section level2">
 <h2>Export data</h2>

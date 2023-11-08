@@ -224,6 +224,21 @@ ggplot(d, aes(x = confidence)) +
 
 ![](cleaning_files/figure-html/unnamed-chunk-5-2.png)<!-- -->
 
+## Recoding factors
+
+Lastly, we recode the `independence` variable. 
+
+
+```r
+# recode independence
+d <- d %>%
+  mutate(
+    independence = ifelse(independence == "indep", "independent", "dependent"),
+    independence = as.factor(independence),
+    independence = fct_relevel(independence, "dependent", "independent")
+    )
+```
+
 ## Export data
 
 
