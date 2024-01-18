@@ -75,7 +75,7 @@ plot_competence_distributions <- function(data) {
   
   # Arrange and display the plots
   competence_plot <- ggarrange(plotlist = plot_list) %>% 
-    annotate_figure(figure,
+    annotate_figure(
                     left = textGrob("Density", rot = 90, vjust = 1, gp = gpar(cex = 1)),
                     bottom = textGrob("Competence", gp = gpar(cex = 1)))
   

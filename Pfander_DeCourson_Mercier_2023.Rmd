@@ -59,7 +59,7 @@ tablelist         : no
 footnotelist      : no
 
 classoption       : "doc" # "doc" for nice look, "man" for manuscripty
-output            : papaja::apa6_pdf # "_doc" for word; however, note that some of the features of kableExtra are not available for word and will yield errors. For example to knit to word, you'll have to comment out all "add_header_above()" functions for model output tables, or e.g. set always allow html as true in the yaml heading
+output            : papaja::apa6_doc # "_doc" for word; however, note that some of the features of kableExtra are not available for word and will yield errors. For example to knit to word, you'll have to comment out all "add_header_above()" functions for model output tables, or e.g. set always allow html as true in the yaml heading
 
 always_allow_html: true
 
@@ -156,71 +156,154 @@ We first review experiments testing whether people infer that individuals whose 
 
 There are two ways for answers to converge: when the answers are continuous, they can have a smaller range or a lower variance; when the answers are categorical (i.e. there are only a few, often two, options), more can agree on the same answer. These two cases have been studied with different paradigms.
 
-In the continuous case, the most relevant evidence comes from the literature on \'advice-taking.\' In these experiments, participants are called \'judges,\' and they need to make numerical estimates--sometimes on factual knowledge, e.g. \'What year was the Suez Canal opened first? [@yanivReceivingOtherPeople2004], sometimes on knowledge controlled by the experimenters, e.g. 'How many animals were on the screen you saw briefly?' [@mollemanStrategiesIntegratingDisparate2020]. To help answer these questions, participants are given estimates from others, the advisors.
+In the continuous case, the most relevant evidence comes from the literature on 'advice-taking.' In these experiments, participants are called 'judges,' and they need to make numerical estimates--sometimes on factual knowledge, e.g. 'What year was the Suez Canal opened first? [@yanivReceivingOtherPeople2004], sometimes on knowledge controlled by the experimenters, e.g. 'How many animals were on the screen you saw briefly?' [@mollemanStrategiesIntegratingDisparate2020]. To help answer these questions, participants are given estimates from others, the advisors [REVIEW ARTICLE].
 
-A substantial share of studies using this judge-advisor paradigm is irrelevant for studying inferences from convergence, because they present participants only with single estimates. In some studies, that single estimate is coming from one advisor [e.g. @bednarikEffectivenessImperfectWeighting2015a; @sollStrategiesRevisingJudgment2009; @yanivReceivingOtherPeople2004; @yanivAdviceTakingDecision2000; @harveyTakingAdviceAccepting1997]. In other studies, that estimate is presented as an average coming from a group of advisors [e.g. @jaylesHowSocialInformation2017a; @mannesAreWeWise2009], but no information about the distribution of initial estimates is given. By contrast, advice-taking studies relevant to our argument provide participants with a set of estimates. One subset of these studies manipulate the degree of convergence between groups of advisors, e.g. via the variance of estimates [@mollemanStrategiesIntegratingDisparate2020; @yanivSpuriousConsensusOpinion2009], or their range [@budescuConfidenceAggregationExpert2000; @budescuEffectsAsymmetryAdvisors2003; @budescuAggregationOpinionsBased2007]. These studies find that participants are more confident about, or rely more on, estimates from groups of advisors who converge more. More indirect evidence comes from another subset of studies on outlier opinions. In these studies, participants were presented with sets of estimates where all but one estimate--the outlier--were close to each other [@harriesCombiningAdviceWeight2004], or overlapping, when estimates were intervals [@yanivWeightingTrimmingHeuristics1997, study 3 & 4]. The outlier was defined, for example, as having "[...] a z-score greater than 2.0 and the remaining opinions had z-scores less than 2.0" [@harriesCombiningAdviceWeight2004]. These studies find that participants heavily discount outliers when aggregating estimates. These results are thus consistent with the idea that people rely more on convergent opinions, although testing extreme cases of singular dissident opinions. Yet more indirect evidence comes from experiments that varied convergence of estimates from single advisors [@yanivWeightingTrimmingHeuristics1997, study 1 & 2]. In this study, participants were shown ranges of estimates from two advisors - one with a small range (e.g. 3 to 5), the other with a big range (e.g. 1 to 10). Participants relied more on the precise, small range advice. These results can be interpreted as a case of inferring accuracy from (internal) convergence of single informants, perceived by participants perhaps as consistency or for example confidence. However, in this study, the small-range advisor was always within the range of the big-range adivsor. Consequently, if people relied more on the small-range advisor, then it was likely not only because of greater convergence, but also because of the overlap between the two advisors.
+Most of this literature is irrelevant to the point at hand since participants are presented with single estimates, either from a single advisor [e.g. @bednarikEffectivenessImperfectWeighting2015a; @sollStrategiesRevisingJudgment2009; @yanivReceivingOtherPeople2004; @yanivAdviceTakingDecision2000; @harveyTakingAdviceAccepting1997], or as an average coming from a group of advisors [e.g. @jaylesHowSocialInformation2017a; @mannesAreWeWise2009], but without any information about the distribution of initial estimates.
 
-## Categorical choices
+By contrast, other advice-taking studies provide participants with a set of individual estimates. One subset of these studies manipulate the degree of convergence between groups of advisors, through the variance of estimates [@mollemanStrategiesIntegratingDisparate2020; @yanivSpuriousConsensusOpinion2009], or their range [@budescuConfidenceAggregationExpert2000; @budescuEffectsAsymmetryAdvisors2003; @budescuAggregationOpinionsBased2007]. These studies find that participants are more confident about, or rely more on, estimates from groups of advisors who converge more.
 
-For categorical choice contexts, experimental evidence on people inferring accuracy from convergence is scarce. There is an extensive body of literature suggesting that people are susceptible to adopting majority behavior and opinions. But it is is difficult to tear apart whether they do so in a strive for normative conformity or for accuracy [@mercierMajorityRulesHow2019]. However, some aspects of the experimental paradigm should favor motivations for accuracy, for example private answers and individual rewards for accuracy. As for human adults, we are aware of only one article that assessing majority effects using such accuracy motivations: In a series of experiments using such accuracy motivations, @morganEvolutionaryBasisHuman2012 systematically varied the proportion of informants agreeing on a given answer, from 50 to 100%. They found that the larger the (relative) size of the majority, the more likely participants were to adopt the majority answer. As for children, relevant evidence comes from studies on social learning in the field of developmental psychology. Several such studies rely on a similar paradigm revolving around a naming tasks [@fusaroChildrenAssessInformant2008; @corriveauGoingFlowPreschoolers2009; @bernardChildrenWeighNumber2015a; @bernardFourSixYearOldChildren2015; @chenChildrenTrustConsensus2013]. In @corriveauGoingFlowPreschoolers2009, for example, children had to find out which of three unfamiliar objects corresponds to the made up name "modi". Three adult informants pointed to one object, but a fourth adult pointed to a different one. The children were then asked for their opinion. All these studies consistently find that children adopt the majority opinion. It is, however, not clear how the naming paradigm taps into intuitions for inferring accuracy - after all, assigning made-up names to objects has no objectively correct solution and, accordingly, these studies are often interpreted to reveal conformity in children [see e.g. @vanleeuwenConformityItsLookalikes2015]. Other experimental paradigms yield similar results. @morganDevelopmentAdaptiveConformity2015 had children (aged between 3 and 7) count which of two pictures displayed more dots. Among 10 adult informants, they varied the proportion of those agreeing on one picture. They find that children relied more on advice from larger (relative) majorities, although younger children (aged 3 to 4) were only affected in cases where the majority would stand against a single dissident. In @haunMajorityBiasedTransmissionChimpanzees2012, 2-year-olds tried to use an unfamiliar box to deliver a reward. The children were more likely to copy an action demonstrated by three informants rather than a different action demonstrated three times by the same informant. In @herrmannStickScriptEffect2013, children (aged 3 to 6) were required to copy a necklace-making demonstration from video. Children showed more fidelity to the demonstrations after watching two identical demonstrations by two different adults than after watching the same individual twice. In @vanleeuwenDevelopmentHumanSocial2018, children could use a choice box with three different pipes to insert a boll, to then receive a toy. Before using the box, they were shown a video of four other children using the box. Three of these children used one particular pipe, each throwing in one ball and receiving one toy per insertion, sequentially. One additional demonstrator used one of the two other pipes three times in a row, also receiving one toy per insertion. Children were then given one ball and had to chose which pipe to use. Children generally followed the majority choice.
+Other studies varied the degree of convergence within a group of advisors. They present participants with a set of estimates where some estimates are close to each other (or overlapping, in cases where estimates were intervals), while others are outliers [@harriesCombiningAdviceWeight2004; [@yanivWeightingTrimmingHeuristics1997, study 3 & 4]. These studies find that participants heavily discount outliers when aggregating estimates.
 
-Although the evidence is not conclusive, especially for categorical choice scenarios, the current literature suggests that people believe more convergent opinions to be more accurate. But is this inference sound?
+Studies on advice taking thus suggest participants believe that more convergent opinions are more likely to be correct. None of these studies investigated whether participants also believe that those whose opinions converge are also more likely to possess some underlying competence.
 
-## Standard wisdom of crowds approaches
+In categorical choice contexts, there is ample and long-standing [e.g. @crutchfieldConformityCharacter1955] evidence from social psychology that participants are more likely to be influenced by majority opinions, and that this influence is stronger when the majority is larger (both in absolute and in relative terms) [e.g., @morganEvolutionaryBasisHuman2012; for review, see @mercierMajorityRulesHow2019). This is true even if normative conformity (when people follow the majority because of social pressure rather than a belief that the majority is correct) is unlikely to play an important role [e.g. because the answers are private, see @aschStudiesIndependenceConformity1956]. Similar results have been obtained with young children [e.g. @fusaroChildrenAssessInformant2008; @corriveauGoingFlowPreschoolers2009; @bernardChildrenWeighNumber2015a; @bernardFourSixYearOldChildren2015; @chenChildrenTrustConsensus2013; @herrmannStickScriptEffect2013; @morganDevelopmentAdaptiveConformity2015].
 
-Literature on the wisdom of crowds provides normative ground for inferring accuracy from others' aggregated opinions [@surowieckiWisdomCrowds2005]. What role does this literature assign to convergence? Here we look at two of the main phenomena that can generate wisdom of crowds effects: averaging, and the CJT.
+If many studies have demonstrated participants tend to infer that more convergent answers are more likely to be correct, few have examined whether participants thought that this convergent was indicative of the individuals' competence. One potential exception is a study with preschoolers [@corriveauGoingFlowPreschoolers2009] in which the children were more likely to believe the opinion of an informant who had previously been the member of a majority over that of an informant who had dissented from the majority. However, it is not clear whether the children thought the members of the majority were particularly competent, since their task--naming an object--was one in which children should already expect a high degree of competence from (adult) informants. This result might thus indicate simply that children infer that someone who disagrees with several others on how to call something is likely wrong, and thus likely less competent at least in that domain.
 
-### Averaging
+## Is inferring competence from convergence justified?
 
-In the beginning of the 20th century, Francis Galton famously demonstrated accuracy gains from averaging: in his "vox populi" experiment, he asked 787 participants to estimate the weight of an ox, and found the average estimate of an ox weight to be just one pound from reality [@galtonVoxPopuli1907]. Since then, it has been shown both theoretically and empirically that the mean or median answer of a group is typically closer to the truth than the mean individual is [see e.g. @yanivBenefitAdditionalOpinions2004; @mannesWisdomSelectCrowds2014]. For instance, when considering a range of numerical estimates that deviate more or less from a correct answer, the error of the mean answer will always be either lower than the mean error (if the correct answer is within the range of all the answers provided), or the same as the mean error (otherwise) [@larrickIntuitionsCombiningOpinions2006]. In fact, the error of the mean is often uncannily small compared to the mean error, a phenomenon which has allowed averaging to considerably improve performance on a variety of problems ranging from political predictions to medical diagnoses [@surowieckiWisdomCrowds2005].
+There is clear evidence that, both in the continuous and the categorical case, participants infer that convergent opinions are more likely to be correct. There is also tentative evidence that participants also infer that individuals who hold more convergent opinions are more likely to be competent. Would that second inference be justified? More precisely, if we consider individuals who have convergent opinions, by contrast with individuals whose opinions are less convergent, or whose opinion diverges from that of a majority, are we justified in thinking that the individuals with more convergent opinions are more likely to be right not only for this specific question, but that they would also be right for other (related) questions?
 
-Averaging works independently of the degree of convergence of a set of estimates. It is not clear how it leads to more accurate results, without making assumptions about the data generating process of these estimates.
+This question can be broken down in two questions, at two different scales. First, can we infer that a population where there is a stronger degree of consensus is, on average, more competent? Second, can we infer that inside this population, individuals who are closer to the consensus are more competent? [add the accuracy/competence distinction?] In the numerical case [trivial analytical result?], it is easy to show that the answer is yes in both cases. We can assume that individuals' answers are a normally distributed random variable, centered on the truth -- that is, participants have no systematic bias. The variance of this variable represents the competence of individuals. Then, both at the population and the individual level, the "sample variance" in their answers -- the mean squared distance to the mean response -- is the best way to estimate competence. Thus, the degree of convergence in the population can be used as a cue of the population competence, and the closeness to consensus of an individual as a cue of individual competence. The categorical case is more intricate. Here, we assume that agents answer a question, with several categorical answers. We define the competence of an individual as the probability to choose the right answer. In this case, we showed that the size of the majority was a good approximation of the average competence of the population. To make an inference at the individual level, we need to specify a population distribution of competence. Here, we assume that the mean competence is equal to the majority size, and a particular value for variance. Using Bayes theorem, we can show that the more agents agree with a focal participant, the more the focal agent can be inferred to be competent (Fig. \@ref(fig:figure-Benoit-2)). Additionally, the more competence varies in the population, the more the degree of convergence is informative on an individual competence. It makes sense: if competence is roughly uniform in the population, then being part of a minority likely reflects bad luck, rather than incompetence. More generally, the fact that the focal individual is right (his 'accuracy') can be inferred more strongly than his competence (Fig. \@ref(fig:figure-Benoit-2)). 
 
-[One might ask why talk about averaging at all - good question. I guess just because it happens in a numeric context and is used to justify aggregating opinions. But the link is not straightforward.]
+(ref:figure-Benoit-2) Average estimated competence and accuracy for an individual, depending on how many participants agree with him. Here, we assume that 20 individuals answer a 5-choice questions. For values higher than 4, we assume that the individual is part of the majority. Below 4, we assume that the focus individual is part of a minority, and that the majority size is 4.
 
-### Condorcet Jury Theorem
-
-In the late 18th Century, Condorcet established a formal argument in favor of large scale majority voting, which would later become known as the Condorcet Jury Theorem (CJT) [@decondorcetEssaiApplicationAnalyse2014]. He demonstrated that, for a binary decision (e.g. correct vs. false), the probability that the majority vote is correct is larger than the probability of each individual being correct. Moreover, as the number of votes increases, the probability that the majority is correct converges towards one. Crucially, the original CJT assumes that (i) each individual has the same probability p to select the correct answer, and (ii) that this probability is at least slightly better than chance (p \> 0.5) (there are also assumptions about the independence and lack of strategic motives, for reviews, see, e.g. @ladhaCondorcetJuryTheorem1992, @austen-smithInformationAggregationRationality1996, @dietrichEpistemicDemocracyDefensible2013).
-
-At least in its basic version, the CJT glosses over variation in convergence, i.e. the relative size of the majority. It allows to make statements such as 'given an individual-level competence p, the probability that a (any) majority vote is correct is Y'. This latter probability comprises votes with 99% majorities as well 51% majorities. To justify inferences of accuracy and competence from convergence, CJT would need to allow making statements such as 'given a majority of X the probability that the majority vote is correct is Y, and the individual-level competence is Z.' In an extension of the CJT, @romeijnLearningJurorCompetence2011 provide normative grounds for making such statements. They show that with increasing relative majority, group members are more likely to be competent and the majority decision to be accurate (??). Their framework is limited, however, to binary decisions.
-
-In sum, the wisdom of crowd literature provides at best insufficient normative grounds for inferring accuracy and competence from convergence. Its main purpose is to justify that aggregating across many opinions is a better strategy than picking any individual's opinion. The proposed aggregation strategies - whether averaging or following the majority - are about extracting wisdom from any crowd. But not all crowds are equally wise. Competence should play a crucial role in the confidence we have in any wisdom of crowd inferences. In the absence of more informative cues, our literature review shows that people place more trust in more convergent crowds. The wisdom of crowd literature does not provide generalizable justification for this behavior.
-
-## Inferring competence from the convergence of opinions
-
-As Eratosthenes' example above illustrates, intuitively it seems there are cases in which we can infer that the members of a group are more likely to be correct, or, equivalently, more competent, when their answers converge. When are we justified to infer that people are right (and thus competent) when they converge?
-
-To provide a normative answer, we built analytical and agent-based models (see \@ref(simulations)). We consider two scenarios in which opinions can converge: a numerical and categorical one. In a numerical setting, we measure convergences by the empirical variance. The closer the estimates, i.e. the smaller the empirical variance, the greater convergence. In the categorical setting, we measure convergence by the share of votes for an option. The larger the share of votes for one option, the greater convergence.
-
-### Numeric
-
-### Categorical
-
-Agents answer a categorical question, with m+1 answers. We define the competence p of an individual as the probability to choose the right answer. Each of the wrong answers has the same probability (1-p)/m to be chosen. We observe the answers of a population of n+1 agents, with diverse levels of competence drawn from a beta distribution -- a flexible probability distribution that can be uniform, unimodal or bimodal, depending on the parameters. We assume that the shape parameters of the beta distribution ($\alpha$ and $\beta$) are known, but the right answer is not. We aim to infer the competence of an individual, based on the population answers. In our analytical model, we use Bayes formula to compute the posterior competence distribution of competence for an individual, knowing that a number K of other participants agree with him. The posterior distribution is a mixture of two beta distributions, Beta($\alpha$+1, $\beta$) and Beta($\alpha$, $\alpha$+1), weighted respectively by the probabilities that K individuals would choose the right or the wrong answer. The model suggests that the more consensual an individual's vote is, the more that individual is estimated to be competent (Fig. \@ref(fig:figure-Benoit)).
-
-(ref:figure-Benoit) Average competence of an informant as a function of K, the number of individuals who agree. In this example, we assume that the number of informants - not counting the focal informant - in a sample is n=10, m=5, and that the population competence ($\alpha$ = $\beta$ = 1).
-
-```{r figure-Benoit, echo=FALSE, fig.cap="(ref:figure-Benoit)", out.width= "50%", fig.align="left"}
-knitr::include_graphics("figures/figure_Benoit.png")
+```{r figure-Benoit-2, echo=FALSE, fig.cap="(ref:figure-Benoit-2)", out.width= "50%", fig.align="left"}
+knitr::include_graphics("figures/figure_Benoit-2.png")
 ```
 
-That said, the average competence is bounded between and $\frac{\alpha}{\alpha+\beta+1}$ and $\frac{\alpha+1}{\alpha+\beta+1}$. In other words, even if all other individuals agree with an informant, a case in which the informant very likely chose the correct answer (add an accuracy figure, maybe?), the competence we should assign to this informant, according to our model, is not higher than $\frac{\alpha+1}{\alpha+\beta+1}$ (or $2/3$ in our example in Fig. \@ref(fig:figure-Benoit)). This counter-intuitive result is due to our framework: we assume that a certain competence distribution as a given, and only observe one decision per individual. Intuitively, in a world where even some highly incompetent people sometimes pick the correct answer by chance, being right (with the majority) once is not a sufficient signal of highest competence.
+This makes sense: the only reason why a member of the majority can be inferred to be more competent is because he is more likely to be right (Fig. \@ref(fig:figure-Benoit-2)). 
+
+(ref:diagram-Benoit) Diagram of the data generating process. Due to noise, there is information loss between each step. Because competence precedes accuracy in the causal chain, more certain inferences can be made about accuracy, compared to competence.
+
+```{r diagram-Benoit, echo=FALSE, fig.cap="(ref:diagram-Benoit)", out.width= "50%", fig.align="left"}
+knitr::include_graphics("figures/diagram_Benoit.png")
+```
+
+In order to better understand the influence of different parameters (e.g. degree of convergence, number of individuals) on the relationship between convergence, accuracy, and competence, we conducted simulations.
+
+### Continuous case
+
+```{r read-simulation-data-numeric, message=FALSE}
+# read data from simulations
+simulation_numeric <- read_csv("Experiment_1/data/sim.csv") %>% 
+  # remove alpha and beta values from competence variable strings
+  mutate(competence = sub("\n.*", "", competence))
+```
+
+In these simulations, a set of agents with varying degrees of competence provide numerical answers. We measure how accurate these answers are, and how much they converge (i.e. how low their variance is). We then correlate the degree of convergence with the accuracy and with the competence of the agents.
+
+More specifically, agents provide an estimate on a scale from 1000 to 2000 (chosen to facilitate the experiments below). Each agent is characterized by a normal distribution of possible answers. All of the agents' distributions are centered around the correct answer, but their standard deviation varies, denoting varying degrees of competence. The agents' standard deviation varied from 1 (highest competence) to 1000 (lowest competence). Agents' competence are drawn from a population competence distribution, expressed by a beta distribution, which can take different shapes. We conducted simulations with a variety of beta distributions which cover a large range of possible competence populations (see Fig. \@ref(fig:competence-distributions)).
+
+(ref:competence-distributions) The different population competence distributions we considered in our simulations. 
+In the continuous simulations, competence values of 0 corresponds to a very large standard deviation (1000, with a mean of 1500, on a scale from 1000 to 2000), thereby practically taking the form of a uniform distribution, while competence of 1 corresponds to a standard deviation of 1. In the categorical simulations, a competence value of 0 corresponds to chance, e.g. in a 3-choice-options scenario, an individual picking the correct answer with a probability of $1/3$, while competence of 1 corresponds to definitely picking the correct answer.
+
+```{r competence-distributions, fig.cap="(ref:competence-distributions)", out.width= "75%"}
+plot_competence_distributions(simulation_numeric)
+```
+
+In the simulation, a population of around 100000 (CHECK THAT AGAIN) agents with different competence is generated. An answer is drawn for each agent, based on their competence. The accuracy of this answer is defined as the squared distance to the true answer. Having a competence and an accuracy value for each agent, we randomly assign agents to groups of, e.g., three. For each group, we calculate the average of the agents' competence and accuracy. We measure the convergence of a group by calculating the standard deviation of the answers. We repeat this process for different sample sizes for the groups, and different competence distributions.
+
+The simulation thus provides, for groups of agents of different size, and drawn from different competence distributions, a measure of their average accuracy, their average competence, and the degree of convergence of their answers, allowing us to represent the relation between these variables. Of particular interest, we depict in Fig. XX the correlation between the convergence of the answers and their accuracy (left), and between the convergence of the answers and the competence of the agents who produced them (right) (for more detailed figures, see Electronic Supplementary Materials). We draw broad conclusions from these results after reporting the outcome of the simulations with categorical answers.
+
+(ref:simulation-numeric-correlations) Correlation between the convergence of the answers of a group of agents and (left) the average accuracy of their answers; (right) the average competence of the agents, as a function of how many agents are in the group, and of the competence distribution of the agents (see Fig. \@ref(fig:competence-distributions)).
+
+```{r simulation-numeric-correlations, fig.cap="(ref:simulation-numeric-correlations)", out.width="75%"}
+# calculate correlations
+simulation_numeric <- simulation_numeric %>% 
+  group_by(competence, sample) %>% 
+  mutate(correlation_accuracy = cor(accuracy_mean, convergence), 
+         correlation_competence = cor(competence_mean, convergence)) %>% 
+  ungroup()
+
+# accuracy plot
+accuracy_plot <- ggplot(simulation_numeric, aes(x = sample, y = correlation_accuracy, color = competence)) +
+  geom_point() + 
+  geom_line(alpha = 0.5) + 
+  labs(y = "Correlation \nAccuracy/Convergence", 
+       x = "Group size", 
+       color = "Competence distribution") +
+  scale_y_continuous(limits = c(0, 1)) +
+  scale_color_brewer(palette = "Set1") +
+  plot_theme + 
+  theme(
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 8)) +
+  rremove("xlab")
+
+# competence plot
+competence_plot <- ggplot(simulation_numeric, aes(x = sample, y = correlation_competence, color = competence)) +
+  geom_point() + 
+  geom_line(alpha = 0.5) + 
+  labs(y = "Correlation \nCompetence/Convergence", 
+       x = "Group size", 
+       color = "Competence distribution") +
+  scale_y_continuous(limits = c(0, 1)) +
+  scale_color_brewer(palette = "Set1") +
+  plot_theme + 
+  theme(
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 8)) +
+  rremove("xlab")
+
+ggarrange(accuracy_plot, competence_plot, common.legend = TRUE) %>% 
+    annotate_figure(bottom = textGrob("Group size", gp = gpar(cex = 1, fontface = "bold")))
+```
+
+### Categorical case
+
+```{r read-simulation-data-categorical, message=FALSE}
+# read data from simulations
+simulation_sample_categorical <- read_csv("Experiment_4/data/sim_rel_majority_vary_competence_sample_3_options.csv")  %>% 
+  # remove alpha and beta values from competence variable strings
+  mutate(competence = sub("\n.*", "", competence))
+
+simulation_options_categorical <- read_csv("Experiment_4/data/sim_rel_majority_vary_competence_options_3_sample.csv")  %>% 
+  # remove alpha and beta values from competence variable strings
+  mutate(competence = sub("\n.*", "", competence))
+```
+
+In the case of categorical answers, convergence can be measured as the relative size of informants picking the same option. The Condorcet jury theorem [@decondorcetEssaiApplicationAnalyse2014; for recent treatments, see, e.g., @ladhaCondorcetJuryTheorem1992, @austen-smithInformationAggregationRationality1996, @dietrichEpistemicDemocracyDefensible2013] and its extensions to situations with more than two options (REF) already shows that the answer defended by the majority/plurality is more likely to be correct. Regarding competence, @romeijnLearningJurorCompetence2011 have shown that when individuals are more competent, the share of majority vote tends to increase. However, they have only studied a case with a uniform distribution of competence. By contrast, here, we investigate a wide range of distributions of competence, and we do not assume that all individuals are equally competent, meaning that, from an observed set of answers, we can attribute an average competence to individuals whose answers form a majority/plurality vs. individuals whose answers form a minority.
+
+We simulate agents who have to decide between a number of options, one of which is correct, and whose competence varies. Competence is defined as a value p, which can differ for each agent, and which corresponds to the probability of selecting the right answer (the agents then have a probability (1-p)/(m-1), with m being the number of options, of selecting any other option). Competence values range from chance level (p = 1/m) to always selecting the correct option (p = 1).  Individual competence levels are drawn from the same population competence beta distributions as in the numerical case (see Fig. \@ref(fig:competence-distributions)). Based on their competence level, we draw an answer for each agent. We measure an agent's accuracy as a binary outcome, namely whether they selected the correct option or not. In each simulation 999000 agents are generated, and then randomly assigned to groups (of varying size in different simulations). Within these groups, we (i) calculate the share of individuals voting for each answer, allowing us to measure convergence (ii) compute an average competence of agents for each level of convergence occurring within that group. 
+Across all groups, we then compute the average of the average within group competence for each degree of convergence. 
+
+We repeat this procedure varying population competence distributions, and either (a) the size of informant groups, or (b) the number of choice options. If we vary the group size, we hold the number of choice options constant at n = 3, and vice versa when varying the number of choice options. Fig. \@ref(fig:simulation-accuracy-sample-categorical) shows the average accuracy, and Fig. \@ref(fig:simulation-competence-sample-categorical) the average competence value for each share of votes, and for different competence levels and varying the group size (see Appendix \@ref(simulations) for results varying the number of choice options instead of group size).
+
+(ref:simulation-accuracy-sample-categorical) Accuracy as a function of vote share for an option, for different population competence distributions and sample sizes. Points represent averages across all simulations within the respective segment. The number of choice options is three.
+
+```{r simulation-accuracy-sample-categorical, fig.cap="(ref:simulation-accuracy-sample-categorical)", out.width="75%"}
+plot_competence_vary_relative_majority_categorical(simulation_sample_categorical,
+                                       outcome = "Accuracy", variable = sample)
+```
+
+(ref:simulation-competence-sample-categorical) Competence as a function of vote share for an option, for different population competence distributions and sample sizes. Points represent averages across all simulations within the respective segment. The number of choice options is three.
+
+```{r simulation-competence-sample-categorical, fig.cap="(ref:simulation-competence-sample-categorical)", out.width="75%"}
+plot_competence_vary_relative_majority_categorical(simulation_sample_categorical,
+                                       outcome = "Competence", variable = sample)
+```
+
+The simulations for the numerical and categorical case demonstrate a similar pattern, which can be summarized as follows:
+(i) Irrespective of group size and of the competence distribution, there is a very strong relation between convergence and accuracy: more convergent answers tend to be more accurate. 
+(ii) For any group size and any competence distribution, there is a relation between convergence and the competence of the agents: more convergent answers tend to stem from more competent agents. The strength of this relation is not much affected by the number of agents whose answers are converging, but, although it is always positive, it ranges from very weak to very strong depending on the initial competence distribution. 
+(iii) The relation between convergence and accuracy is always much stronger than the relation between convergence and average competence of the agents.
 
 ## Overview experiments
 
-We test whether people infer that the members of a group are correct, and thus likely competent, when their answers converge in two series of experiments. In all experiments, participants see the estimates or choices of different individuals, which we will call informants. Participants were were not given any information about the estimation tasks and the informants - they had no priors.
+We test whether people infer that individuals are more likely to give accurate answers, and to be competent, when their answers converge, both in numerical tasks (Experiments 1, 2, 3), and in categorical tasks (Experiments 4, 5, 6). By contrast with previous experiments, participants were not were not given any information about the tasks–how difficult they were–and the informants–how competent they might be. We also manipulated (Experiments 2, 3, and 5) whether the convergence of the answers could be explained by something else than accuracy, which should reduce participants’ reliance on the convergence of the answer as a cue to accuracy and to competence.
 
-In the first series (experiment 1 to 3), the scenario is about numerical estimates. In the second series (experiment 4 to 6), the scenario is about categorical choices.
-
-In experiment 1 (numerical) and 4 (categorical), participants evaluated several groups of informants, with each informant providing an answer independently. We manipulated convergence, i.e how close estimates were (Exp. 1, numerical setting), or how consensual an answer was (Exp.4, categorical setting). We found that the more convergence, the more participants inferred accuracy and competence.
-
-In experiments 3 (numerical) and 5 (categorical), we tested whether cues of informational dependency inferences hamper inferences from convergence. Besides convergence, we manipulated whether informants were independent (mimicking experiments 1 and 4) or shared a conflict of interest. We found that (i) participants inferred accuracy and competence from convergence even when informants were in a conflict of interest situation, but (ii) that these inference are more enhanced when informants are independent. Using a slightly different experimental setting, we replicate our results from experiments 1 and 4.
-
-In experiment 2, we tested a different form of informational dependency: informants were either independent informants or "had discussed at great length with each other" before making their estimate. We did not find a difference between the two conditions. This experiment was the only one in which we did not manipulate convergence - all informant groups were convergent.
-
-In experiment 5, we tested whether more choice options (ten vs. three) enhance inferences from convergence. We reasoned that with more options, consensus is less likely to occur by chance, and thus people might find it more impressive. We did not find that the number of choice options altered effects of convergence.
-
-All experiments were pre-registered. Pre-registration documents, data and code can be found on Open Science Framework (OSF, <https://osf.io/6abqy/>). All analyses were conducted in R (version 4.2.2) using R Studio.
+All experiments were pre-registered. Pre-registration documents, data and code can be found on Open Science Framework (OSF, <https://osf.io/6abqy/>). All analyses were conducted in R (version 4.2.2) using R Studio. For most statistical models, we relied on the `lme4` package and its `lmer()` function. 
 
 ## Experiment 1
 
