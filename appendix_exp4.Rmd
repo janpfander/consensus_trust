@@ -1,0 +1,55 @@
+# Experiment 4 {#exp4}
+
+\FloatBarrier
+
+## Attention check
+
+Imagine you are playing video games with a friend and at some point your friend says: “I don’t want to play this game anymore! To make sure that you read the instructions, please write the three following words "I pay attention" in the box below. I really dislike this game, it's the most overrated game ever.”
+
+Do you agree with your friend? (Yes/No)
+
+## Stimuli
+
+We manipulate convergence within participants. All participants see all four conditions, with two stimuli (i.e. game results) per condition (see Table \@ref(tab:exp4-stimuli)). Each participant therefore sees eight stimuli in total (4 convergence levels x 2 stimuli)
+
+```{r exp4-stimuli, echo=FALSE}
+# Create a matrix of image file paths as Markdown-formatted strings
+image_paths <- data.frame(condition = c("opposing majority (0)", 
+                                        "dissensus (1)", "majority (2)", 
+                                        "consensus (3)"),
+                          imgage_a = c("![](Experiment_4/figures/stimuli/opp_majority_a.png){ width=60% }", 
+                        "![](Experiment_4/figures/stimuli/divergence_a.png){ width=60% }",
+                        "![](Experiment_4/figures/stimuli/majority_a.png){ width=60% }", 
+                        "![](Experiment_4/figures/stimuli/consensus_a.png){ width=60% }"),
+                        imgage_b = c("![](Experiment_4/figures/stimuli/opp_majority_b.png){ width=60% }", 
+                        "![](Experiment_4/figures/stimuli/divergence_b.png){ width=60% }",
+                        "![](Experiment_4/figures/stimuli/majority_b.png){ width=60% }", 
+                        "![](Experiment_4/figures/stimuli/consensus_b.png){ width=60% }"))
+
+# Use kable() to create the table and print it as Markdown
+kableExtra::kable(image_paths, format = "markdown",
+                  col.names = c("Level", "Version a)", "Version b)"), 
+                  align = "c",
+                  caption = "All stimuli by levels of convergence")
+
+```
+
+## Results
+
+Table \@ref(tab:exp4-table) contains descriptive results.
+
+```{r exp4-table}
+exp4 %>% 
+  group_by(convergence_categorical, convergence) %>% 
+  summarise(across(c(competence, accuracy), list(mean = mean, sd = sd))) %>% 
+  rounded_numbers() %>% 
+  mutate(Accuracy = paste0(accuracy_mean, " (sd = ", accuracy_sd, ")"),
+         Competence = paste0(competence_mean, " (sd = ", competence_sd, ")"),
+         Convergence = paste0(convergence_categorical, " (", convergence, ")")
+         ) %>% 
+  ungroup() %>% 
+  select(Convergence, Accuracy, Competence) %>% 
+  apa_table()
+```
+
+

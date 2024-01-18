@@ -43,7 +43,7 @@ authornote: |
   HM received funding from XX
 
 abstract: |
-  Are people who agree on something more likely to be right? Evidence suggests that people tend to make this inference. However, standard wisdom of crowds approaches do not provide normative grounds for this behavior. Using simulations and analytical arguments, we argue that in stylized scenarios where individuals make independent and unbiased estimates, more convergent groups individuals indeed tend to be more competent and accurate. Mirroring the stylized setting of the simulations, we then show that people make these inferences in a series of experiments. Importantly, in our experiments people do not have any other cues available than the social information (i.e. no priors). These inferences from convergence might help explain why people respect scientists' competence, even if they do not understand much about how scientific results are reached.
+  Are people who agree on something more likely to be right? Evidence suggests that people tend to make this inference. However, standard wisdom of crowds approaches do not provide normative grounds for this behavior. Using simulations and analytical arguments, we argue that in stylized scenarios where individuals make independent and unbiased estimates, more convergent groups individuals indeed tend to be more competent and accurate. Mirroring the stylized setting of the simulations, we then show that people make these inferences in a series of experiments. Importantly, in our experiments people do not have any other cues available than the social information (i.e. no priors). These inferences from convergence might help explain why people respect scientists’ competence, even if they do not understand much about how scientific results are reached.
   
 keywords          : 
 
@@ -59,11 +59,15 @@ tablelist         : no
 footnotelist      : no
 
 classoption       : "doc" # "doc" for nice look, "man" for manuscripty
-output            : papaja::apa6_doc # "_doc" for word; however, note that some of the features of kableExtra are not available for word and will yield errors. For example to knit to word, you'll have to comment out all "add_header_above()" functions for model output tables, or e.g. set always allow html as true in the yaml heading
+output            : papaja::apa6_pdf # "_doc" for word; however, note that some of the features of kableExtra are not available for word and will yield errors. For example to knit to word, you'll have to comment out all "add_header_above()" functions for model output tables, or e.g. set always allow html as true in the yaml heading
 
 always_allow_html: true
 
 appendix:
+  - "appendix_exp1.Rmd"
+  - "appendix_exp2.Rmd"
+  - "appendix_exp3.Rmd"
+
 bibliography: references.bib
 ---
 
@@ -127,6 +131,9 @@ library("kableExtra")  # also for tables
 library("sf")          # for maps
 library("ggpubr")      # for combining plots with ggarrange() 
 library("viridis")     # for generating color palette for map 
+library("grid")        # for image plots   
+library("gridExtra")   # for image plots
+library("png")         # for image plots
 ```
 
 ```{r functions}
@@ -139,19 +146,19 @@ source("functions/own_functions.R")
 
 # Introduction
 
-Imagine that you live in ancient Greece, and a fellow called Eratostenes claims the circumference of the earth is 252000 stades (approximately 40000 kilometers). You know nothing about this man, and you don't understand trigonometry. Moreover, you know little about the circumference of the Earth, and even less of how one could measure such a thing. As a result, you discard his opinion and take him for a pretentious loon. But what if other scholars had arrived at very similar measurements, independently of Eratosthenes? Or even if they had carefully checked his measurement, with a critical eye? Wouldn't that give you enough ground to believe not only that the estimates might be correct, but also that Eratosthenes and his fellow scholars must be quite bright, to be able to achieve such a feat?
+Imagine that you live in ancient Greece, and a fellow called Eratostenes claims the circumference of the earth is 252000 stades (approximately 40000 kilometers). You know nothing about this man, the circumference of the Earth, or how one could measure such a thing. As a result, you discard Eratostenes' opinion and (mis)take him for a pretentious loon. But what if other scholars had arrived at very similar measurements, independently of Eratosthenes? Or even if they had carefully checked his measurement, with a critical eye? Wouldn't that give you enough ground to believe not only that the estimates might be correct, but also that Eratosthenes and his fellow scholars must be quite bright, to be able to achieve such a feat as measuring the Earth?
 
-In this article, we explore how, under some circumstances, we infer that a group of people who provided the same, or very similar answers to a question are likely to be correct, and to be competent in the relevant area, even if we had no prior about either what the correct answer was, or about their competence.
+In this article, we explore how, under some circumstances, we should, and we do infer that a group of individuals whose answers converge are likely to be correct, and to be competent in the relevant area, even if we had no prior belief about either what the correct answer was, or about these individuals' competence.
 
-We first review experiments suggesting that people, including young children, appear to trust groups with more convergent opinions to be more accurate, although the evidence is more conclusive in numerical than in categorical choice contexts. We continue by explaining that two well-studied forms of the wisdom of crowds--averaging and the Condorcet Jury Theorem--do not provide normative grounds for this behavior. We then present the results of simulations, suggesting that under certain conditions, inferences from convergence to accuracy and to underlying competence are sound. Finally, we show that participants draw these inferences in a series of six experiments.
+We first review experiments testing whether people infer that individuals whose answers converge are more likely to be right, and to be competent. We then argue that little attention has been paid to the normative models that might explain when and why such an inference from convergence to competence is warranted. We develop such models, both analytically and with simulations. Finally, we present a series of experiments in which participants evaluate the competence of individuals in groups as a function of how much they converge on a given answer, in the absence of any priors about these individuals' competence, or what the correct answer is.
 
-## Numerical choices
+## Do people infer that individuals whose answers converge tend to be right, and to be competent?
 
-Informants can converge in numerical (e.g. how many calories are there in an apple?) and categorical (e.g. which option is correct - A or B?) choice contexts. In numerical contexts, convergence varies by the proximity of estimates; in categorical contexts, convergence varies by the ratio of people agreeing on a choice. We start by reviewing numerical choices.
+There are two ways for answers to converge: when the answers are continuous, they can have a smaller range or a lower variance; when the answers are categorical (i.e. there are only a few, often two, options), more can agree on the same answer. These two cases have been studied with different paradigms.
 
-For numerical choice contexts, evidence that people take convergence into account can be found in advice-taking experiments. In these experiments, participants are called judges, and they need to make numerical estimates--sometimes on factual knowledge, e.g. 'What year was the Suez Canal opened first?' [@yanivReceivingOtherPeople2004], sometimes on knowledge controlled by the experimenters, e.g. 'How many animals were on the screen you saw briefly?' [@mollemanStrategiesIntegratingDisparate2020]. To help answer these questions, participants are given estimates from others, the advisors--sometimes presented as fellow participants, sometimes as experts. The overarching question in those studies is how people integrate social information from the advisors when making estimates.
+In the continuous case, the most relevant evidence comes from the literature on \'advice-taking.\' In these experiments, participants are called \'judges,\' and they need to make numerical estimates--sometimes on factual knowledge, e.g. \'What year was the Suez Canal opened first? [@yanivReceivingOtherPeople2004], sometimes on knowledge controlled by the experimenters, e.g. 'How many animals were on the screen you saw briefly?' [@mollemanStrategiesIntegratingDisparate2020]. To help answer these questions, participants are given estimates from others, the advisors.
 
-A substantial share of studies using this judge-advisor paradigm is irrelevant for studying inferences from convergence, because they present participants only with single estimates. In some studies, that single estimate is coming from one advisor [e.g. @bednarikEffectivenessImperfectWeighting2015a; @sollStrategiesRevisingJudgment2009; @yanivReceivingOtherPeople2004; @yanivAdviceTakingDecision2000; @harveyTakingAdviceAccepting1997]. In other studies, that estimate is presented as an average coming from a group of advisors [e.g. @jaylesHowSocialInformation2017a; @mannesAreWeWise2009], but no information about the distribution of initial estimates is given. By contrast, other advice-taking studies provide participants with a set of estimates. One subset of these studies manipulate the degree of convergence between groups of advisors, e.g. via variance of estimates [@mollemanStrategiesIntegratingDisparate2020; @yanivSpuriousConsensusOpinion2009], or their range [@budescuConfidenceAggregationExpert2000; @budescuEffectsAsymmetryAdvisors2003; @budescuAggregationOpinionsBased2007]. These studies find that participants are more confident about, or rely more on, estimates from groups of advisors who converge more. More indirect evidence comes from another subset of studies varied the degree of convergence within groups of advisors. They present participants with sets of estimates where some estimates are close to each other (or overlapping, in cases where estimates were intervals), while others were clearly outliers [@yanivWeightingTrimmingHeuristics1997, study 3 & 4; @harriesCombiningAdviceWeight2004]. These studies find that participants heavily discount outliers when aggregating estimates. These results are thus consistent with the idea that people rely more on convergent opinions, although testing extreme cases of singular dissident opinions. Another study varied convergence between estimates from single advisors [@yanivWeightingTrimmingHeuristics1997, study 1 & 2]. In this study, participants were shown ranges of estimates from two advisors - one with a small range, the other with a big range. Participants relied more on the precise, small range advice. These results can be interpreted as a case of inferring accuracy from (internal) convergence of single informants, perceived by participants perhaps as consistency or for example confidence. However, in this study, the small-range advisor (e.g. 3 to 5) was always within the range of the big-range adivsor (e.g. 1 to 10). If people relied more on the small-range advisor, then it was likely not only because of greater convergence, but also because of the overlap between the two advisors.
+A substantial share of studies using this judge-advisor paradigm is irrelevant for studying inferences from convergence, because they present participants only with single estimates. In some studies, that single estimate is coming from one advisor [e.g. @bednarikEffectivenessImperfectWeighting2015a; @sollStrategiesRevisingJudgment2009; @yanivReceivingOtherPeople2004; @yanivAdviceTakingDecision2000; @harveyTakingAdviceAccepting1997]. In other studies, that estimate is presented as an average coming from a group of advisors [e.g. @jaylesHowSocialInformation2017a; @mannesAreWeWise2009], but no information about the distribution of initial estimates is given. By contrast, advice-taking studies relevant to our argument provide participants with a set of estimates. One subset of these studies manipulate the degree of convergence between groups of advisors, e.g. via the variance of estimates [@mollemanStrategiesIntegratingDisparate2020; @yanivSpuriousConsensusOpinion2009], or their range [@budescuConfidenceAggregationExpert2000; @budescuEffectsAsymmetryAdvisors2003; @budescuAggregationOpinionsBased2007]. These studies find that participants are more confident about, or rely more on, estimates from groups of advisors who converge more. More indirect evidence comes from another subset of studies on outlier opinions. In these studies, participants were presented with sets of estimates where all but one estimate--the outlier--were close to each other [@harriesCombiningAdviceWeight2004], or overlapping, when estimates were intervals [@yanivWeightingTrimmingHeuristics1997, study 3 & 4]. The outlier was defined, for example, as having "[...] a z-score greater than 2.0 and the remaining opinions had z-scores less than 2.0" [@harriesCombiningAdviceWeight2004]. These studies find that participants heavily discount outliers when aggregating estimates. These results are thus consistent with the idea that people rely more on convergent opinions, although testing extreme cases of singular dissident opinions. Yet more indirect evidence comes from experiments that varied convergence of estimates from single advisors [@yanivWeightingTrimmingHeuristics1997, study 1 & 2]. In this study, participants were shown ranges of estimates from two advisors - one with a small range (e.g. 3 to 5), the other with a big range (e.g. 1 to 10). Participants relied more on the precise, small range advice. These results can be interpreted as a case of inferring accuracy from (internal) convergence of single informants, perceived by participants perhaps as consistency or for example confidence. However, in this study, the small-range advisor was always within the range of the big-range adivsor. Consequently, if people relied more on the small-range advisor, then it was likely not only because of greater convergence, but also because of the overlap between the two advisors.
 
 ## Categorical choices
 
@@ -165,7 +172,7 @@ Literature on the wisdom of crowds provides normative ground for inferring accur
 
 ### Averaging
 
-In the beginning of the 20th century, Francis Galton famously demonstrated accuracy gains from averaging: in his “vox populi” experiment, he asked 787 participants to estimate the weight of an ox, and found the average estimate of an ox weight to be just one pound from reality [@galtonVoxPopuli1907]. Since then, it has been shown both theoretically and empirically that the mean or median answer of a group is typically closer to the truth than the mean individual is [see e.g. @yanivBenefitAdditionalOpinions2004; @mannesWisdomSelectCrowds2014]. For instance, when considering a range of numerical estimates that deviate more or less from a correct answer, the error of the mean answer will always be either lower than the mean error (if the correct answer is within the range of all the answers provided), or the same as the mean error (otherwise) [@larrickIntuitionsCombiningOpinions2006]. In fact, the error of the mean is often uncannily small compared to the mean error, a phenomenon which has allowed averaging to considerably improve performance on a variety of problems ranging from political predictions to medical diagnoses [@surowieckiWisdomCrowds2005].
+In the beginning of the 20th century, Francis Galton famously demonstrated accuracy gains from averaging: in his "vox populi" experiment, he asked 787 participants to estimate the weight of an ox, and found the average estimate of an ox weight to be just one pound from reality [@galtonVoxPopuli1907]. Since then, it has been shown both theoretically and empirically that the mean or median answer of a group is typically closer to the truth than the mean individual is [see e.g. @yanivBenefitAdditionalOpinions2004; @mannesWisdomSelectCrowds2014]. For instance, when considering a range of numerical estimates that deviate more or less from a correct answer, the error of the mean answer will always be either lower than the mean error (if the correct answer is within the range of all the answers provided), or the same as the mean error (otherwise) [@larrickIntuitionsCombiningOpinions2006]. In fact, the error of the mean is often uncannily small compared to the mean error, a phenomenon which has allowed averaging to considerably improve performance on a variety of problems ranging from political predictions to medical diagnoses [@surowieckiWisdomCrowds2005].
 
 Averaging works independently of the degree of convergence of a set of estimates. It is not clear how it leads to more accurate results, without making assumptions about the data generating process of these estimates.
 
@@ -181,16 +188,15 @@ In sum, the wisdom of crowd literature provides at best insufficient normative g
 
 ## Inferring competence from the convergence of opinions
 
-As Eratosthenes’ example above illustrates, intuitively it seems there are cases in which we can infer that the members of a group are more likely to be correct, or, equivalently, more competent, when their answers converge. When are we justified to infer that people are right (and thus competent) when they converge?
+As Eratosthenes' example above illustrates, intuitively it seems there are cases in which we can infer that the members of a group are more likely to be correct, or, equivalently, more competent, when their answers converge. When are we justified to infer that people are right (and thus competent) when they converge?
 
-To provide a normative answer, we built analytical and agent-based models (see \@ref(simulations)). We consider two scenarios in which opinions can converge: a numerical and categorical one. In a numerical setting, we measure convergences by the empirical variance. The closer the estimates, i.e. the smaller the empirical variance, the greater convergence. In the categorical setting, we measure convergence by the share of votes for an option. The larger the share of votes for one option, the greater convergence. 
+To provide a normative answer, we built analytical and agent-based models (see \@ref(simulations)). We consider two scenarios in which opinions can converge: a numerical and categorical one. In a numerical setting, we measure convergences by the empirical variance. The closer the estimates, i.e. the smaller the empirical variance, the greater convergence. In the categorical setting, we measure convergence by the share of votes for an option. The larger the share of votes for one option, the greater convergence.
 
-### Numeric 
+### Numeric
 
 ### Categorical
 
-Agents answer a categorical question, with m+1 answers. We define the competence p of an individual as the probability to choose the right answer.  Each of the wrong answers has the same probability (1-p)/m to be chosen. We observe the answers of a population of n+1 agents, with diverse levels of competence drawn from a beta distribution – a flexible probability distribution that can be uniform, unimodal or bimodal, depending on the parameters. We assume that the shape parameters of the beta distribution ($\alpha$ and $\beta$) are known, but the right answer is not. We aim to infer the competence of an individual, based on the population answers.
-In our analytical model, we use Bayes formula to compute the posterior competence distribution of competence for an individual, knowing that a number K of other participants agree with him. The posterior distribution is a mixture of two beta distributions, Beta($\alpha$+1, $\beta$) and Beta($\alpha$, $\alpha$+1), weighted respectively by the probabilities that K individuals would choose the right or the wrong answer. The model suggests that the more consensual an individual's vote is, the more that individual is estimated to be competent (Fig. \@ref(fig:figure-Benoit)). 
+Agents answer a categorical question, with m+1 answers. We define the competence p of an individual as the probability to choose the right answer. Each of the wrong answers has the same probability (1-p)/m to be chosen. We observe the answers of a population of n+1 agents, with diverse levels of competence drawn from a beta distribution -- a flexible probability distribution that can be uniform, unimodal or bimodal, depending on the parameters. We assume that the shape parameters of the beta distribution ($\alpha$ and $\beta$) are known, but the right answer is not. We aim to infer the competence of an individual, based on the population answers. In our analytical model, we use Bayes formula to compute the posterior competence distribution of competence for an individual, knowing that a number K of other participants agree with him. The posterior distribution is a mixture of two beta distributions, Beta($\alpha$+1, $\beta$) and Beta($\alpha$, $\alpha$+1), weighted respectively by the probabilities that K individuals would choose the right or the wrong answer. The model suggests that the more consensual an individual's vote is, the more that individual is estimated to be competent (Fig. \@ref(fig:figure-Benoit)).
 
 (ref:figure-Benoit) Average competence of an informant as a function of K, the number of individuals who agree. In this example, we assume that the number of informants - not counting the focal informant - in a sample is n=10, m=5, and that the population competence ($\alpha$ = $\beta$ = 1).
 
@@ -198,25 +204,23 @@ In our analytical model, we use Bayes formula to compute the posterior competenc
 knitr::include_graphics("figures/figure_Benoit.png")
 ```
 
-That said, the average competence is bounded between  and $\frac{\alpha}{\alpha+\beta+1}$ and $\frac{\alpha+1}{\alpha+\beta+1}$. In other words, even if all other individuals agree with an informant, a case in which the informant very likely chose the correct answer (add an accuracy figure, maybe?), the competence we should assign to this informant, according to our model, is not higher than $\frac{\alpha+1}{\alpha+\beta+1}$ (or $2/3$ in our example in Fig. \@ref(fig:figure-Benoit)). This counter-intuitive result is due to our framework: we assume that a certain competence distribution as a given, and only observe one decision per individual. Intuitively, in a world where even some highly incompetent people sometimes pick the correct answer by chance, being right (with the majority) once is not a sufficient signal of highest competence.
+That said, the average competence is bounded between and $\frac{\alpha}{\alpha+\beta+1}$ and $\frac{\alpha+1}{\alpha+\beta+1}$. In other words, even if all other individuals agree with an informant, a case in which the informant very likely chose the correct answer (add an accuracy figure, maybe?), the competence we should assign to this informant, according to our model, is not higher than $\frac{\alpha+1}{\alpha+\beta+1}$ (or $2/3$ in our example in Fig. \@ref(fig:figure-Benoit)). This counter-intuitive result is due to our framework: we assume that a certain competence distribution as a given, and only observe one decision per individual. Intuitively, in a world where even some highly incompetent people sometimes pick the correct answer by chance, being right (with the majority) once is not a sufficient signal of highest competence.
 
 ## Overview experiments
 
 We test whether people infer that the members of a group are correct, and thus likely competent, when their answers converge in two series of experiments. In all experiments, participants see the estimates or choices of different individuals, which we will call informants. Participants were were not given any information about the estimation tasks and the informants - they had no priors.
 
-In the first series (experiment 1 to 3), the scenario is about numerical estimates. In the second series (experiment 4 to 6), the scenario is about categorical choices. 
+In the first series (experiment 1 to 3), the scenario is about numerical estimates. In the second series (experiment 4 to 6), the scenario is about categorical choices.
 
 In experiment 1 (numerical) and 4 (categorical), participants evaluated several groups of informants, with each informant providing an answer independently. We manipulated convergence, i.e how close estimates were (Exp. 1, numerical setting), or how consensual an answer was (Exp.4, categorical setting). We found that the more convergence, the more participants inferred accuracy and competence.
 
-In experiments 3 (numerical) and 5 (categorical), we tested whether cues of informational dependency inferences hamper inferences from convergence. Besides convergence, we manipulated whether informants were independent (mimicking experiments 1 and 4) or shared a conflict of interest. We found that (i) participants inferred accuracy and competence from convergence even when informants were in a conflict of interest situation, but (ii) that these  inference are more enhanced when informants are independent. Using a slightly different experimental setting, we replicate our results from experiments 1 and 4.
+In experiments 3 (numerical) and 5 (categorical), we tested whether cues of informational dependency inferences hamper inferences from convergence. Besides convergence, we manipulated whether informants were independent (mimicking experiments 1 and 4) or shared a conflict of interest. We found that (i) participants inferred accuracy and competence from convergence even when informants were in a conflict of interest situation, but (ii) that these inference are more enhanced when informants are independent. Using a slightly different experimental setting, we replicate our results from experiments 1 and 4.
 
 In experiment 2, we tested a different form of informational dependency: informants were either independent informants or "had discussed at great length with each other" before making their estimate. We did not find a difference between the two conditions. This experiment was the only one in which we did not manipulate convergence - all informant groups were convergent.
 
 In experiment 5, we tested whether more choice options (ten vs. three) enhance inferences from convergence. We reasoned that with more options, consensus is less likely to occur by chance, and thus people might find it more impressive. We did not find that the number of choice options altered effects of convergence.
 
 All experiments were pre-registered. Pre-registration documents, data and code can be found on Open Science Framework (OSF, <https://osf.io/6abqy/>). All analyses were conducted in R (version 4.2.2) using R Studio.
-
-# Numerical estimates: Experiments 1 to 3
 
 ## Experiment 1
 
@@ -233,9 +237,11 @@ exp1 <- read_csv("Experiment_1/data/cleaned.csv") %>%
     convergence = fct_relevel(convergence, "divergent", "convergent"), 
     number = fct_relevel(number, "small", "large"))
 
+# Hypotheses
+
 # run mixed model (random slope and intercept) with participants as random factor
 exp1_model_accuracy = lmer(confidence ~ convergence + number + (1 + convergence | ID), data = exp1)
-exp1_model_competence = lmer(confidence ~ convergence + number + (1 + convergence | ID), data = exp1)
+exp1_model_competence = lmer(competence ~ convergence + number + (1 + convergence | ID), data = exp1)
 
 # extract descriptives for inline reporting
 exp1_descriptives <- list(
@@ -245,13 +251,77 @@ exp1_descriptives <- list(
   model_accuracy = text_ready(exp1_model_accuracy), 
   model_competence = text_ready(exp1_model_competence)
 )
+
+# Research questions
+
+# RQ2 (as separate t-test):
+accuracy <- t.test(confidence ~ number, data = exp1, paired = TRUE)
+competence <- t.test(competence ~ number, data = exp1, paired = TRUE) 
+
+# RQ2 and RQ3 (as single mixed model):
+
+# effect code variables
+exp1 <- exp1 %>% 
+  mutate(convergence_effect_code = recode(convergence, "divergent" = -0.5, "convergent" = +0.5),
+         number_effect_code = recode(number, "small" = -0.5, "large" = +0.5))
+
+model_interaction_competence = lmer(competence ~ convergence_effect_code + number_effect_code +
+                                      convergence_effect_code*number_effect_code + 
+                                      (1 + convergence_effect_code | ID), data = exp1)
+
+model_interaction_accuracy = lmer(confidence ~ convergence_effect_code + number_effect_code +
+                                    convergence_effect_code*number_effect_code + 
+                                    (1 + convergence_effect_code | ID), data = exp1)
+
+# Exploratory analysis: Is effect of convergence bigger on accuracy then on competence? 
+exp1_explorative <- exp1 %>% 
+  pivot_longer(
+    c(confidence, competence),
+    names_to = "outcome", 
+    values_to = "score") %>% 
+  # effect code variables
+  mutate(outcome_effect_code = recode(outcome, "confidence" = -0.5, "competence" = +0.5)
+         )
+
+# run mixed model (random slope and intercept) with participants as random factor
+exploratory_analysis <- lmer(score ~ convergence_effect_code + outcome + 
+                               convergence_effect_code*outcome + 
+                               (1 + convergence_effect_code + outcome | ID), 
+                             data = exp1_explorative)
+
+exp1_research_questions <- list(
+  # speparate t-tests for RQ2
+  means = exp1 %>% 
+    group_by(number) %>% 
+    summarise(across(c(confidence, competence), 
+                     mean)) %>% 
+    rounded_numbers() %>% 
+    split(.$number), 
+  accuracy = clean_t_test(accuracy), 
+  competence = clean_t_test(competence),
+  # RQ2 and RQ3 in a single mixed model
+  model_interaction_competence = text_ready(model_interaction_competence), 
+  model_interaction_accuracy = text_ready(model_interaction_accuracy),
+  # Exploratory analysis
+  exploratory_analysis = text_ready(exploratory_analysis)
+)
 ```
+
+## RQ3 - Interaction between number and convergence on competence
 
 The first experiment was designed to test the effect of convergence on the (average) perceived accuracy of estimates (H1) and the perceived competence of a group of informants (H2). We decided to measure accuracy as confidence in one's estimate based on a group of informants estimates. Our two hypotheses therefore read:
 
 ***H1: When making a guess based on the estimates of (independent) informants, participants will be more confident about their guess when these estimates converge compared to when they diverge.***
 
 ***H2: Participants perceive (independent) informants whose estimates converge more as more competent than informants whose estimates diverge.***
+
+We had three additional research questions about the number of informants:
+
+***RQ1: Do H1 and H2 hold for both a small [3] and a large [10] number of estimates?***
+
+***RQ2: When making a guess based on the opinions of (independent) informants, will participants be more confident about their guess when there is a larger number of estimates compared to when this number is smaller?***
+
+***RQ3: Is there an interaction effect between the number of estimates and convergence on perceived competence of informants?***
 
 ### Participants
 
@@ -261,7 +331,7 @@ We recruited `r exp1_descriptives$n_subj` participants from the UK via Prolific.
 
 After providing their consent to participate in the study and passing an attention check, participants read the following introduction: "Some people are playing games in which they have to estimate various quantities. Each game is different. You have no idea how competent the people are: they might be completely at chance, or be very good at the task. It's also possible that some are really good while others are really bad. Some tasks might be hard while others are easy. Across various games, we will give you the answers of several players, and ask you questions about how good they are. As it so happens, for all the games, the estimates have to be between 1000 and 2000, but all the games are completely different otherwise, and might require different skills, be of different difficulties, etc. Each player in the game makes their own estimate, completely independent of the others". They were then presented to the results of eight such games and had to answer questions (Fig.1).
 
-(ref:stimulus-exp1) Results of one of eight games that participants have to rate. The stimulus corresponds to a divergent, 10 players condition
+(ref:stimulus-exp1) Results of one of eight games that participants have to rate. The stimulus corresponds to a convergent, 10 players condition
 
 ```{r stimulus-exp1, echo=FALSE, fig.cap="(ref:stimulus-exp1)", out.width= "50%", fig.align="center"}
 knitr::include_graphics("figures/example_stimulus_exp1.png")
@@ -271,11 +341,9 @@ knitr::include_graphics("figures/example_stimulus_exp1.png")
 
 We manipulated two experimental factors: First, the convergence of the estimates (how close they were); second, the number of estimates (how many players there were). We did not make explicit hypotheses on the latter, but included some research questions (cf. pre-registration document). Each factor had two levels: convergent vs. divergent and low (three) vs. high (ten). We used a 2(convergence: divergent/convergent) x 2(number: low/high) within-participant design, with each participant seeing all of the conditions. Per condition, participants saw two sets of estimates (game results). Thus, each participant saw eight sets of estimates in total.
 
-#### Stimuli
+#### Materials
 
-We generated sets of estimates with random draws from normal distributions. First, we varied the standard deviation of these distributions to simulate the degree of convergence (150 for divergence, 20 for convergence; estimate scale ranged from 1000 to 2000). Second, we varied the number of draws from these distributions per set (three for low number, 10 for high number). For each of the four possible resulting condition, we generated two random draws from the respective normal distribution.
-
-The means of the normal distributions that we draw our estimates from were distinct between sets of estimates. Considering our within-participant design, we wanted to ensure that participants understood each set of estimates as being the result of a different, unrelated game. In order to assure that random draws from the distributions will (most likely) appear on the response scale (1000 to 2000), we constrained the means of all normal distributions to lie between the first and third quartile of the response scale (i.e. smallest possible mean was 1225 and largest 1775). We define a set of eight means--one for each set of estimates--that cover the range from first to third quartile of the predefined scale with an equal interval (1250, 1325, 1400, 1475, 1550, 1625, 1700, 1775). We randomly paired means with conditions when generating the stimuli. We then drew the set of estimates from the respective normal distributions given the assigned means and the condition constraints. We repeated this three times, resulting in three different series of eight sets of estimates. We randomly assign participants to one of these series. Additionally, for each participant, we randomize the order of appearance of the sets of estimates within the respective series. Images of all sets of estimates can be found on the OSF.
+We generated sets of estimates with random draws from normal distributions. First, we varied the standard deviation of these distributions to simulate the degree of convergence (150 for divergence, 20 for convergence; estimate scale ranged from 1000 to 2000). Second, we varied the number of draws (either three or 10) from these distributions. For each of the four possible resulting conditions, we generated two random draws from the respective normal distribution. More information on how the stimuli were created can be found in Appendix \@ref(exp1).
 
 #### Dependent variables
 
@@ -283,100 +351,15 @@ For each set of estimates participants responded to several questions. We first 
 
 [^1]: We changed this measure in study 3. Participants did not make a guess and were asked "How accurate do you think...". The results are very similar.
 
-### Results
+### Results and discussion
 
-To account from dependencies of observations due to our within-participant design, we ran mixed models, with random intercept and random slope for participants, using the `lme4` package and its `lmer()` function in R. In the models, we control for the number of estimates (our second experimental factor). Figure \@ref(fig:exp1-plot) visualizes the results and table \@ref(tab:exp1-table) contains descriptive results. We find a positive effect of convergence on accuracy: Participants were more confident about their estimate in convergent scenarios ($\Delta$ Accuracy = `r exp1_descriptives$model_accuracy$convergenceconvergent$estimate` `r exp1_descriptives$model_accuracy$convergenceconvergent$ci`, p = `r exp1_descriptives$model_accuracy$convergenceconvergent$p.value`) than in divergent ones (Accuracy = `r exp1_descriptives$model_accuracy$intercept$estimate` `r exp1_descriptives$model_accuracy$intercept$ci`, p = `r exp1_descriptives$model_accuracy$intercept$p.value`). We also find a positive effect of convergence on competence: participants rated players as more competent in convergent scenarios ($\Delta$ Competence = `r exp1_descriptives$model_competence$convergenceconvergent$estimate` `r exp1_descriptives$model_competence$convergenceconvergent$ci`, p = `r exp1_descriptives$model_competence$convergenceconvergent$p.value`) than in divergent ones (Competence = `r exp1_descriptives$model_competence$intercept$estimate` `r exp1_descriptives$model_competence$intercept$ci`, p = `r exp1_descriptives$model_competence$intercept$p.value`).
+To account from dependencies of observations due to our within-participant design, we ran mixed models, with random intercept and random slopes of convergence for participants, using the `lme4` package and its `lmer()` function in R. In the models for our hypotheses, we control for the number of estimates (our second experimental factor). Visualizations and descriptive statistics can be found in Appendix \@ref(exp1). We find a positive effect of convergence on accuracy: Participants were more confident about their estimate in convergent scenarios ($\Delta$ Accuracy = `r exp1_descriptives$model_accuracy$convergenceconvergent$estimate` `r exp1_descriptives$model_accuracy$convergenceconvergent$ci`, p = `r exp1_descriptives$model_accuracy$convergenceconvergent$p.value`) than in divergent ones (Accuracy = `r exp1_descriptives$model_accuracy$intercept$estimate` `r exp1_descriptives$model_accuracy$intercept$ci`, p = `r exp1_descriptives$model_accuracy$intercept$p.value`). We also find a positive effect of convergence on competence: participants rated players as more competent in convergent scenarios ($\Delta$ Competence = `r exp1_descriptives$model_competence$convergenceconvergent$estimate` `r exp1_descriptives$model_competence$convergenceconvergent$ci`, p = `r exp1_descriptives$model_competence$convergenceconvergent$p.value`) than in divergent ones (Competence = `r exp1_descriptives$model_competence$intercept$estimate` `r exp1_descriptives$model_competence$intercept$ci`, p = `r exp1_descriptives$model_competence$intercept$p.value`).
 
-```{r exp1-table}
-exp1 %>% 
-  group_by(convergence) %>% 
-  summarise(across(c(competence, confidence), list(mean = mean, sd = sd))) %>% 
-  rounded_numbers() %>% 
-  mutate(Accuracy = paste0(confidence_mean, " (sd = ", confidence_sd, ")"),
-         Competence = paste0(competence_mean, " (sd = ", competence_sd, ")")
-         ) %>% 
-  rename(Convergence = convergence) %>% 
-  select(Convergence, Accuracy, Competence) %>% 
-  apa_table()
-```
+To test our research questions, we ran the same mixed-models but this time including an interaction between number of informants and convergence. We use effect-coded versions of our variables, allowing us to detect main effects for each factor. As for RQ2, pooling across convergent and divergent conditions, we find a main effect of number, such that participants had more confidence in their estimate when they relied on ten informants compared to three informants (beta = `r exp1_research_questions$model_interaction_accuracy$number_effect_code$estimate` `r exp1_research_questions$model_interaction_accuracy$number_effect_code$ci`, p = `r exp1_research_questions$model_interaction_accuracy$number_effect_code$p.value`). As for RQ3, we find an interaction between number and convergence regarding competence: participants perceived ten informants as slightly more competent than three informants in convergent scenarios, but not in divergent ones (beta = `r exp1_research_questions$model_interaction_competence$interaction$estimate` `r exp1_research_questions$model_interaction_competence$interaction$ci`, p = `r exp1_research_questions$model_interaction_competence$interaction$p.value`). There was no interaction regarding accuracy (beta = `r exp1_research_questions$model_interaction_accuracy$interaction$estimate` `r exp1_research_questions$model_interaction_accuracy$interaction$ci`, p = `r exp1_research_questions$model_interaction_accuracy$interaction$p.value`)
 
-(ref:exp1-plot) Distributions of accuracy and competence by level of convergence.
+In an exploratory, not pre-registered analysis, we tested whether the effect of convergence is bigger on accuracy than on competence. To do so, we regressed the outcome score on convergence and it's interaction with a binary variable indicating which outcome was asked for (accuracy or competence). We find that pooled across divergent and convergent conditions, participants rated participants reported lower perceived accuracy than competence (beta = `r exp1_research_questions$exploratory_analysis$outcomeconfidence$estimate` `r exp1_research_questions$exploratory_analysis$outcomeconfidence$ci`, `r exp1_research_questions$exploratory_analysis$outcomeconfidence$p.value`). However, we do not find an interaction effect indicating a difference of this effect between convergent and divergent conditions (beta = `r exp1_research_questions$exploratory_analysis$interaction$estimate` `r exp1_research_questions$exploratory_analysis$interaction$ci`, `r exp1_research_questions$exploratory_analysis$interaction$p.value`).
 
-```{r exp1-plot, fig.cap="(ref:exp1-plot)"}
-# make mean data for plot
-x_nudge <- 0.8
-
-means <- exp1 %>%
-  group_by(convergence) %>%
-  summarize(confidence = mean(confidence), 
-            competence = mean(competence)) %>% 
-  pivot_longer(c(confidence, competence), 
-               names_to = "outcome", 
-               values_to = "value") %>% 
-  mutate(x_position = ifelse(convergence == "convergent", value + x_nudge, 
-                                value - x_nudge)) 
-
-confidence_plot <- ggplot(data=exp1, aes(x=confidence, fill=convergence)) +
-  # density plot
-  geom_density(adjust=3, alpha=.6) +
-  # mean lines
-  geom_vline(data=means %>% 
-               filter(outcome == "confidence"), 
-             aes(xintercept = value, 
-                 color = convergence),
-             show.legend = FALSE,
-             linetype="dashed") +
-  geom_label(data = means %>% 
-               filter(outcome == "confidence"), 
-             aes(x = x_position, y = 0.3, 
-                 label =  paste("mean", round(value, digits = 2),
-                                sep = " = ")), 
-             alpha = 0.6, show.legend = FALSE, size = 3
-            ) +
-  # scales
-  scale_x_continuous(name = "Accuracy (confidence) ratings", breaks = seq(1, 7), 
-                     limits=c(1, 7)) +
-  scale_y_continuous(name = "Density", limits=c(0, 0.3)) +
-  scale_fill_viridis_d(option = "plasma") +
-  scale_color_viridis_d(option = "plasma") + 
-  guides(fill = guide_legend(title = NULL)) +
-  plot_theme 
-
-competence_plot <- ggplot(data=exp1, aes(x=competence, fill=convergence)) +
-  # density plot
-  geom_density(adjust=3, alpha=.6) +
-  # mean lines
-  geom_vline(data=means %>% 
-               filter(outcome == "competence"), 
-             aes(xintercept = value, 
-                 color = convergence),
-             show.legend = FALSE,
-             linetype="dashed") +
-  geom_label(data = means %>% 
-               filter(outcome == "competence"), 
-             aes(x = x_position, y = 0.3, 
-                 label =  paste("mean", round(value, digits = 2),
-                                sep = " = ")), 
-             alpha = 0.6, show.legend = FALSE, size = 3
-            ) +
-  # scales
-  scale_x_continuous(name = "Competence ratings", breaks = seq(1, 7), 
-                     limits=c(1, 7)) +
-  scale_y_continuous(name = "Density", limits=c(0, 0.3)) +
-  scale_fill_viridis_d(option = "plasma") +
-  scale_color_viridis_d(option = "plasma") + 
-  guides(fill = guide_legend(title = NULL)) +
-  plot_theme 
-
-figure <- ggarrange(confidence_plot, 
-                    competence_plot + 
-                      theme(axis.text.y = element_blank(),
-                            axis.ticks.y = element_blank(),
-                            axis.title.y = element_blank()), 
-                    common.legend = T) +
-  theme(legend.position="top") 
-figure
-```
+In summary, as predicted, participants were more confident when the estimates were more convergent, which indicates they believed the estimates to have been more accurate, and they thought the individuals who had made more convergent estimates were more competent.
 
 ## Experiment 2
 
@@ -407,7 +390,7 @@ exp2_descriptives <- list(
 )
 ```
 
-In experiment 1, informants were always independent. In experiment 2, we set out to test whether informational dependency alters inferences from convergence. We used the same setting as in experiment one, in which participants saw the fictional results of an estimation game. However, this time participants only saw convergent sets of estimates. We manipulated informational dependency: players were independent either independent or could "discuss at lenght" before making an estimate. Our hypotheses were:
+It is rational to infer that convergent estimates are more likely to be accurate, and to have been made by competent individuals, only if the convergence is best explained by the accuracy of the estimates. However, convergence could also be the outcome of other factors. If the individuals do not make their estimates independently of each other, a single individual might exert a strong influence on the others, making their convergence a poor cue to their accuracy. Alternatively, all individuals might have an incentive to provide a similar, but not accurate answer. In Experiment 2, we investigate the first possibility, and the second in Experiment 3. In particular, for Experiment 2 we rely on past results showing that participants, under some circumstances, put less weight on opinions that have been formed through discussion, by contrast with more independent opinions [@harkinsInformationUtilityMultiple1987; see also @lopesSocialValidationEveryday2007; @hessPsychologicalAdaptationsAssessing2006; @einavThinkingThemselvesEffect2018]. We sought to replicate this finding in the context of convergent estimates, formulating the following hypotheses:
 
 ***H1: When making a guess based on convergent estimates of informants, participants will be more confident about their guess when informants were independent compared to when they weren't (i.e. they could discuss before).***
 
@@ -419,126 +402,21 @@ We recruited `r exp2_descriptives$n_subj` participants from the UK via Prolific.
 
 ### Design
 
-We manipulated informational dependency. According to the condition, players read a different introduction before seeing a set of estimates (see Table \@ref(tab:exp2-conditions)).
-
-```{r exp2-conditions}
-# The different introductions that participants read before seeing the sets of estimates, according to the conditions 
-data.frame(
-  Condition = c("Independence", "Discussion"),
-  Description = c(
-    "Players are asked to make completely independent decisions – they cannot see each other’s estimates, or talk with each other before giving their estimates.",
-    "Players are asked to talk with each other about the game at length before giving their estimates."
-  )
-) #%>% 
-  # apa_table(align = c("m{3cm}", "m{12cm}")) 
-```
+In a within-participants design, participants saw both an independence condition, in which they were told "Players are asked to make completely independent decisions -- they cannot see each other's estimates, or talk with each other before giving their estimates," and a dependence condition, in which they were told "Players are asked to talk with each other about the game at length before giving their estimates."
 
 #### Stimuli
 
-We a subset of the stimuli we had generated for experiment one, namely convergent ones with three estimates. By contrast to experiment one, participants saw only two stimuli in total (one set of estimates per condition). Otherwise, we proceeded just as in experiment one: we randomly assigned individual participants to one of the three series of stimuli, and for each participant, we randomized the order of appearance of conditions.
+We used the materials generated for the convergent condition of Experiment 1. By contrast to experiment one, participants saw only two stimuli in total (one set of estimates per condition). Otherwise, we proceeded just as in experiment one: we randomly assigned individual participants to one of the three series of stimuli, and for each participant, we randomized the order of appearance of conditions.
 
 #### Dependent variables
 
 We relied on the same set of questions as in experiment one.
 
-### Results
+### Results and discussion
 
-To account for dependencies of observations due to our within-participant design, we ran mixed models, with a random intercept for participants, using the `lme4` package and its `lmer()` function in R. Figure \@ref(fig:exp2-plot) visualizes the results and table \@ref(tab:exp2-table) contains descriptive results. The data does not support our hypotheses. Participants were slightly less confident about their estimates when the converging informants were independent $\Delta$ Accuracy = `r exp2_descriptives$model_accuracy$independenceindependent$estimate` `r exp2_descriptives$model_accuracy$independenceindependent$ci`, p = `r exp2_descriptives$model_accuracy$independenceindependent$p.value`), compared to when they discussed (Accuracy = `r exp2_descriptives$model_accuracy$intercept$estimate` `r exp2_descriptives$model_accuracy$intercept$ci`, p = `r exp2_descriptives$model_accuracy$intercept$p.value`). The effect is small, but in the opposite direction of what we had predicted. We do not find an effect regarding competence.
+To account for dependencies of observations due to our within-participant design, we ran mixed models, with a random intercept for participants, using the `lme4` package and its `lmer()` function in R. Visualizations and descriptive statistics can be found in Appendix \@ref(exp2). The data does not support our hypotheses. Participants were slightly less confident about their estimates when the converging informants were independent $\Delta$ Accuracy = `r exp2_descriptives$model_accuracy$independenceindependent$estimate` `r exp2_descriptives$model_accuracy$independenceindependent$ci`, p = `r exp2_descriptives$model_accuracy$independenceindependent$p.value`), compared to when they discussed (Accuracy = `r exp2_descriptives$model_accuracy$intercept$estimate` `r exp2_descriptives$model_accuracy$intercept$ci`, p = `r exp2_descriptives$model_accuracy$intercept$p.value`). The effect is small, but in the opposite direction of what we had predicted. We do not find an effect regarding competence.
 
-```{r exp2-table}
-exp2 %>% 
-  group_by(independence) %>% 
-  summarise(across(c(competence, confidence), list(mean = mean, sd = sd))) %>% 
-  rounded_numbers() %>% 
-  mutate(Accuracy = paste0(confidence_mean, " (sd = ", confidence_sd, ")"),
-         Competence = paste0(competence_mean, " (sd = ", competence_sd, ")")
-         ) %>% 
-  rename(Independence = independence) %>% 
-  select(Independence, Accuracy, Competence) %>% 
-  apa_table()
-```
-
-(ref:exp2-plot) Distributions of accuracy and competence by level of informational dependency.
-
-```{r exp2-plot, fig.cap="(ref:exp2-plot)"}
-# make mean data for plot
-x_nudge <- 0.8
-
-means <- exp2 %>%
-  group_by(independence) %>%
-  summarize(confidence = mean(confidence), 
-            competence = mean(competence)) %>% 
-  pivot_longer(c(confidence, competence), 
-               names_to = "outcome", 
-               values_to = "value") %>% 
-  mutate(x_position = ifelse(independence == "dependent", value + x_nudge, 
-                                value - x_nudge)) 
-
-confidence_plot <- ggplot(data=exp2, aes(x=confidence, fill=independence)) +
-  # density plot
-  geom_density(adjust=3, alpha=.6) +
- # mean lines
-  geom_vline(data=means %>% 
-               filter(outcome == "confidence"), 
-             aes(xintercept = value, 
-                 color = independence),
-             show.legend = FALSE,
-             linetype="dashed") +
-  geom_label(data = means %>% 
-               filter(outcome == "confidence"), 
-             aes(x = x_position, y = 0.3, 
-                 label =  paste("mean", round(value, digits = 2),
-                                sep = " = ")), 
-             alpha = 0.6, show.legend = FALSE, size = 3
-            ) +
-  # scales
-  scale_x_continuous(name = "Accuracy (confidence) ratings", breaks = seq(1, 7), 
-                     limits=c(1, 7)) +
-  scale_y_continuous(name = "Density", limits=c(0, 0.4)) +
-  scale_fill_brewer(palette = "Accent",
-                    direction = 1) +
-  scale_color_brewer(palette = "Accent",
-                    direction = 1) +
-  guides(fill = guide_legend(title = NULL)) +
-  plot_theme 
-
-competence_plot <- ggplot(data=exp2, aes(x=competence, fill=independence)) +
-  # density plot
-  geom_density(adjust=3, alpha=.6) +
- # mean lines
-  geom_vline(data=means %>% 
-               filter(outcome == "competence"), 
-             aes(xintercept = value, 
-                 color = independence),
-             show.legend = FALSE,
-             linetype="dashed") +
-  geom_label(data = means %>% 
-               filter(outcome == "competence"), 
-             aes(x = x_position, y = 0.3, 
-                 label =  paste("mean", round(value, digits = 2),
-                                sep = " = ")), 
-             alpha = 0.6, show.legend = FALSE, size = 3
-            ) +
-  # scales
-  scale_x_continuous(name = "Competence ratings", breaks = seq(1, 7), 
-                     limits=c(1, 7)) +
-  scale_y_continuous(name = "Density", limits=c(0, 0.4)) +
-  scale_fill_brewer(palette = "Accent",
-                    direction = 1) +
-  scale_color_brewer(palette = "Accent",
-                    direction = 1) +
-  guides(fill = guide_legend(title = NULL)) +
-  plot_theme 
-
-figure <- ggarrange(confidence_plot, 
-                    competence_plot + 
-                      theme(axis.text.y = element_blank(),
-                            axis.ticks.y = element_blank(),
-                            axis.title.y = element_blank()), 
-                    common.legend = T) +
-  theme(legend.position="top") 
-figure
-```
+Contrary to the hypotheses, participants did not deem convergent estimates made after a discussion, compared to independently, to be less accurate, or made by less competent individuals. This suggests that participants might not be sensitive to at least some forms of informational dependency between the individuals making the estimates. Although previous studies have found that participants sometimes discount the opinions of groups compared to those of independent individuals, the superior performance of groups over individuals for a range of tasks [for review, see, e.g., @mercierArgumentativeTheoryPredictions2016a], including numerical estimates [e.g. @mercierDoesDiscussionMake2022] suggests that this discounting might have been misguided. As a result, the participants in the current experiment might have been behaving rationally when they did not discount the estimates made after discussion.
 
 ## Experiment 3
 
@@ -586,13 +464,11 @@ exp3_descriptives <- list(
 )
 ```
 
-The aim of experiment 3 was twofold: First, we wanted to replicate the results of experiment 1 in a slightly more ecological scenario. In experiment 3, participants were told they saw (fictional) predictions of experts for stock values. Since we expected the findings of experiment one to replicate, our first set of hypotheses was:
+Experiment 3 tests whether participants are sensitive to another potential source of dependency between convergent estimates: when the individuals making the estimate share an incentive to bias their estimates in a given direction, independently of its accuracy. Even though it is formally similar to Experiment 1, the setting is different, as participants were told that they would be looking at (fictional) predictions of experts for stock values, instead of the answers of individuals in abstract games. In the conflict of interest condition, the experts had an incentive to value the stock in a given way, while they had no such conflict of interest in the independence condition. Given the nature of this manipulation, participants might have discounted the opinions of the conflicted experts, irrespective of the degree of convergence of their estimates. As a result, we could not directly compare the participants' answers across conditions. Instead, we must test whether the effect of greater convergence is reduced when the individuals making the estimates are systematically biased, compared to when they are not. On this basis, we formulate four hypotheses, two which are identical to those of Experiment 1, and only apply in the independent condition, and two that bear on the comparison between the conditions.
 
 ***H1a: Participants perceive predictions of independent informants as more accurate when they converge compared to when they diverge.***
 
 ***H1b: Participants perceive independent informants as more competent when their predictions converge compared to when they diverge.***
-
-Second, as in experiment two, we wanted to test the independence assumption -- but this time, against a different case of informational dependency, namely when informants shared a conflict of interest. In this condition, experts were described to gain from estimating the value of a stock at a certain price -- and that price always happened to be the mean of the the expert's estimates. Our second set of hypotheses was:
 
 ***H2a: The effect of convergence on accuracy (H1a) is more positive in a context where informants are independent compared to when they are in a conflict of interest.***
 
@@ -600,94 +476,23 @@ Second, as in experiment two, we wanted to test the independence assumption -- b
 
 ### Participants
 
-The interaction design of our third experiment made the power analysis more complex and less standard than for experiments one and two. Because we could build upon data from the first experiment, we ran a power analysis by simulation. The simulation code is available on OSF, and the procedure is described in the pre-registration document. The simulation suggested that 100 participants provide a significant interaction term between 95% and 97% (alpha for significance = 0.05) of the time. Due to uncertainty about the assumptions we made and because we had resources for a larger sample, we recruited `r exp3_descriptives$n_subj` participants for this study -- again, from the UK and via Prolific. Again, not a single participant failed our attention check.
+The interaction design of our third experiment made the power analysis more complex and less standard than for experiments one and two. Because we could build upon data from the first experiment, we ran a power analysis by simulation. The simulation code is available on OSF, and the procedure is described in the pre-registration document. The simulation suggested that 100 participants provide a significant interaction term between 95% and 97% of the time, given an alpha threshold for significance of 0.05. Due to uncertainty about our effect size assumptions and because we had resources for a larger sample, we recruited `r exp3_descriptives$n_subj` participants for this study -- again, from the UK and via Prolific. Again, not a single participant failed our attention check.
 
 ### Procedure
 
-After providing their consent to participate in the study and passing an attention check, participants read the following introduction: "You will see four scenarios in which several experts predict the future value of a stock. You have no idea how competent the experts are. It's also possible that some are really good while others are really bad. As it so happens, in all scenarios, the predictions for the value of the stock have to lie between 1000 and 2000. Other than that, the scenarios are completely unrelated: it is different experts predicting the values of different stocks every time." Participants then saw the four scenarios, each introduced by a text according to which condition the participant was assigned to (see Table \@ref(tab:conditions-exp3); for more detailed materials see pre-registration document on OSF).
-
-```{r conditions-exp3}
-# The different introductions that participants read before seeing the sets of estimates, according to the conditions 
-data.frame(
-  Condition = c("Independence", "Conflict of interest"),
-  Description = c(
-    "Experts are independent of each other, and have no conflict of interest in predicting the stock value - they do not personally profit in any way from any future valuation of the stock.",
-    "All three experts have invested in the specific stock whose value they are predicting, and they benefit if other people believe that the stock will be valued at [mean of respective distribution] in the future."
-  )
-) #%>% 
-  # apa_table(align = c("m{3cm}", "m{12cm}"))  
-```
+After providing their consent to participate in the study and passing an attention check, participants read the following introduction: "You will see four scenarios in which several experts predict the future value of a stock. You have no idea how competent the experts are. It's also possible that some are really good while others are really bad. As it so happens, in all scenarios, the predictions for the value of the stock have to lie between 1000 and 2000. Other than that, the scenarios are completely unrelated: it is different experts predicting the values of different stocks every time." Participants then saw the four scenarios, each introduced by a text according to which condition the participant was assigned to. To remove any potential ambiguity about participants' inferences on the accuracy of the estimates, we replaced the question about confidence to one bearing directly on accuracy: "On average, how accurate do you think these three predictions are?" on a 7-point Likert scale ("not accurate at all" to "extremely accurate"). The question about competence read: "On average, how good do you think these three experts are at predicting the value of stocks?", also assessed on a 7-point Likert scale (from "not good at all" to "extremely good").
 
 #### Design
 
-We manipulated two factors: informational dependency (two levels, independence and conflict of interest, see Table \@ref(tab:conditions); between participants) and convergence (two levels, convergence and divergence; within participants).
+We manipulated two factors: informational dependency (two levels, independence and conflict of interest; between participants) and convergence (two levels, convergence and divergence; within participants). In the independence condition, the participants read "Experts are independent of each other, and have no conflict of interest in predicting the stock value - they do not personally profit in any way from any future valuation of the stock." In the conflict of interest condition, the participants read "All three experts have invested in the specific stock whose value they are predicting, and they benefit if other people believe that the stock will be valued at [mean of respective distribution] in the future." The distributions presented were similar to those of Experiment 1, although generated in a slightly different manner (see Appendix \@ref(exp3)).
 
-#### Stimuli
+### Results and discussion
 
-Our design required that each participant sees four different sets of predictions--two convergent and two divergent ones. We generated new stimuli: As in experiment 1, estimates would appear on a scale from 1000 to 2000. By contrast with experiment 1, we generated the sets of estimates with random draws from uniform distributions (instead of normal distributions). We varied the range of these distributions according to convergence (60 for convergence, 600 for divergence). Switching from normal distributions to uniform distributions made 'unlucky' draws in which conditions are visually not distinguishable less likely.
-
-Similar to the previous experiments, we also vary the value on the prediction scale (from 1000 to 2000) across which the range is centered. Considering our within-participant design, this, again, made it seem more likely that participants understand each set of predictions as being the result of a different stock, with a different true value. In order to assure all random draws from the distributions would appear on the response scale, we constrained the center of the uniform distributions to lie between 1300 and 1700. We define four center values -- one per set of predictions -- that divide this interval in (rounded) quartiles (1300, 1430, 1570, 1700). Given a center and a range, we then draw the predictions from uniform distributions. For example, in a draw for a divergent set of estimates with a center of 1700, each value within a range of 1400 and 2000 is equally likely to get selected. To avoid that single draws overlap too much within the same set, we defined a minimum space of 5 between the three predictions of a set.
-
-To minimize confounding of convergence with a certain placement of the center value, we paired center values with conditions such that each condition appears once in each half of the scale and each condition gets one of the extreme values. For example, in one set the convergence condition would get assigned center values of 1300 and 1570, the divergent condition center values of 1430 and 1700). We generated four such series (all possible combinations) and randomly assigned participants to one of them. Additionally, for each participant, we randomize the order of appearance of the sets of predictions within the respective series.
-
-For each set of predictions, we calculated the empirical mean based on the randomly drawn estimates. In the conflict of interest condition, this mean was inserted as the value that participants were be told experts would gain from. Consequently, the convergent predictions converge around what is said to be the incentivized value for the experts to choose.
-
-#### Dependent variables
-
-By contrast to the previous experiments, we operationalized accuracy as an actual question on accuracy this time. For each set of estimates participants responded to the following questions: First, "On average, how accurate do you think these three predictions are?" on a 7-point Likert scale ("not accurate at all" to "extremely accurate"); second, "On average, how good do you think these three experts are at predicting the value of stocks?", also assessed on a 7-point Likert scale (from "not good at all" to "extremely good").
-
-### Results
-
-To account for dependencies of observations due to our within-participant design, we ran mixed models, with a random intercept and a random slope for convergence for participants, using the `lme4` package and its `lmer()` function in R. Figure \@ref(fig:exp3-plot) visualizes the results and Table \@ref(tab:exp3-table) contains descriptive results.
+To account for dependencies of observations due to our within-participant design, we ran mixed models, with a random intercept and a random slope for convergence for participants, using the `lme4` package and its `lmer()` function in R. Figure \@ref(fig:exp3-plot) visualizes the results.
 
 We find evidence all four hypotheses. As for the first set of hypotheses, to match the setting of experiment one, we reduced the sample of experiment three to half of the participants, namely those who were assigned to the independence condition. On this reduced sample, we ran the exact same analyses as in experiment 1 and replicated the results (see left side of Fig. \@ref(fig:exp3-plot)). We find a positive effect of convergence on accuracy ($\Delta$ Accuracy = `r exp3_descriptives$model_h1_accuracy$convergenceconvergent$estimate` `r exp3_descriptives$model_h1_accuracy$convergenceconvergent$ci`, p = `r exp3_descriptives$model_h1_accuracy$convergenceconvergent$p.value`; baseline Accuracy divergent: `r exp3_descriptives$model_h1_accuracy$intercept$estimate` `r exp3_descriptives$model_h1_accuracy$intercept$ci`, p = `r exp3_descriptives$model_h1_accuracy$intercept$p.value`). We find very similar results for competence ($\Delta$ Competence = `r exp3_descriptives$model_h1_competence$convergenceconvergent$estimate` `r exp3_descriptives$model_h1_competence$convergenceconvergent$ci`, p = `r exp3_descriptives$model_h1_competence$convergenceconvergent$p.value`; baseline Competence divergent: `r exp3_descriptives$model_h1_competence$intercept$estimate` `r exp3_descriptives$model_h1_competence$intercept$ci`, p = `r exp3_descriptives$model_h1_competence$intercept$p.value`).
 
 The second set of hypotheses targeted the interaction of informational dependency and convergence (for a visual representation of these interactions, see Fig. \@ref(fig:exp3-plot)). In the independence condition, the effect of convergence on accuracy was more positive ($\Delta$ Convergence = `r exp3_descriptives$model_accuracy$interaction$estimate` `r exp3_descriptives$model_accuracy$interaction$ci`, p = `r exp3_descriptives$model_accuracy$interaction$p.value`) than in the conflict of interest condition (Convergence = `r exp3_descriptives$model_accuracy$convergenceconvergent$estimate` `r exp3_descriptives$model_accuracy$convergenceconvergent$ci`, p = `r exp3_descriptives$model_accuracy$convergenceconvergent$p.value`). Likewise the effect of convergence on competence is more positive ($\Delta$ Convergence = `r exp3_descriptives$model_competence$interaction$estimate` `r exp3_descriptives$model_competence$interaction$ci`, p = `r exp3_descriptives$model_competence$interaction$p.value`) than in the conflict of interest condition (Convergence = `r exp3_descriptives$model_competence$convergenceconvergent$estimate` `r exp3_descriptives$model_competence$convergenceconvergent$ci`, p = `r exp3_descriptives$model_competence$convergenceconvergent$p.value`).
-
-```{r exp3-table}
-exp3_accuracy <- exp3 %>% 
-  group_by(independence, convergence) %>% 
-  summarise(across(accuracy, list(mean = mean, sd = sd))) %>% 
-  rounded_numbers() %>% 
-  mutate(Accuracy = paste0(accuracy_mean, " (sd = ", accuracy_sd, ") ")) %>% 
-  select(independence, convergence, Accuracy) %>% 
-    mutate(convergence = ifelse(convergence == "divergent", "Divergent", 
-                "Convergent")) %>%  
-  pivot_wider(names_from = convergence,
-              values_from = Accuracy) %>% 
-  mutate(independence = ifelse(independence == "conflict", "Conflict of interest", 
-                "Independent") 
-         ) %>% 
-  rename(" " = independence) %>% 
-  as.matrix()
-
-exp3_competence <- exp3 %>% 
-  group_by(independence, convergence) %>% 
-  summarise(across(competence, list(mean = mean, sd = sd))) %>% 
-  rounded_numbers() %>% 
-  mutate(Competence = paste0(competence_mean, " (sd = ", competence_sd, ") ")) %>% 
-  select(independence, convergence, Competence) %>% 
-    mutate(convergence = ifelse(convergence == "divergent", "Divergent", 
-                "Convergent")) %>%  
-  pivot_wider(names_from = convergence,
-              values_from = Competence) %>% 
-  mutate(independence = ifelse(independence == "conflict", "Conflict of interest", 
-                "Independent") 
-         ) %>% 
-  ungroup() %>% 
-  select(-independence) %>% 
-  as.matrix()
-
-table <- cbind(exp3_accuracy, exp3_competence)
-
-table %>%
-  kable(booktabs = TRUE, 
-        # need to add a (empty) caption for cross referencing to work
-        caption = "") %>%
-  kable_styling() %>% 
-  add_header_above(c("", "Accuracy" = 2, "Competence" = 2)) 
-
-```
 
 (ref:exp3-plot) Distributions of accuracy and competence by convergence and informational dependency.
 
@@ -763,11 +568,13 @@ figure <- ggarrange(interaction_accuracy, interaction_competence,
 figure
 ```
 
-# Categorical estimates: Experiments 4 to 6
+Experiment 3 shows that, when the individuals making the estimates are systematically biased, then participants put less weight on the convergence of their estimates to infer that the estimates are accurate, and that the individuals making them are competent.
+
+*Cut this transition out probably*: \_\_\_\_\_\_\_ \# Categorical estimates: Experiments 4 to 6
 
 In the first series of experiments (experiments 1-3) we tested inferences from convergence in a numerical choice setting: Participants saw (fictive) players' numeric estimates on a scale from 1000 to 2000. The degree of convergence varied by the distance between estimates.
 
-In the second series of experiments (experiments 4-6), we test inferences from convergence in a categorical choice setting. In the categorical scenario, the fictive players make choices on a set of response options (i.e. categories). Convergence varies by the ratio of people agreeing on an option. Experiment four and five can be considered robustness checks as to whether the results of the first series hold in a categorical choice setting. Experiment six tests a new context factor: the number of choice options.
+In the second series of experiments (experiments 4-6), we test inferences from convergence in a categorical choice setting. In the categorical scenario, the fictive players make choices on a set of response options (i.e. categories). Convergence varies by the ratio of people agreeing on an option. Experiment four and five can be considered robustness checks as to whether the results of the first series hold in a categorical choice setting. Experiment six tests a new context factor: the number of choice options. \_\_\_\_\_\_
 
 ## Experiment 4
 
@@ -804,7 +611,7 @@ exp4_descriptives <- list(
 )
 ```
 
-In line with our findings in numerical choice settings, we predicted that:
+In a second series of experiments, we test similar predictions to those of the previous experiments, but in a categorical choice context. The set-up is similar to that of Experiment 1, except that the outcomes seen by the participants are not numerical estimates, but choices made between a few options. In Experiment 4 tests hypotheses that are analogous to those of Experiment 1:
 
 ***H1: Participants perceive an estimate of an independent informant as more accurate the more it converges with the estimates of other informants.***
 
@@ -812,49 +619,65 @@ In line with our findings in numerical choice settings, we predicted that:
 
 ### Participants
 
-We ran a power simulation to inform our choice of sample size. All assumptions and details on the procedure can be found in the `power_Exp4.Rmd` document. We ran two different power analyses, one for each outcome variable. We set the power threshold for our experiment to 90%. The power simulation for `accuracy` suggested that even for as few as 10 participants (the minimum sample size we simulated data for), we would have a power of close to 100%. The simulation for `competence` suggested that we achieve statistical power of at least 90% with a sample size of `30`. Due to uncertainty about our assumptions, we recruited `r exp4_descriptives$n_subj` participants.
+We ran a power simulation to inform our choice of sample size. All assumptions and details on the procedure can be found on the OSF. We ran two different power analyses, one for each outcome variable. We set the power threshold for our experiment to 90%. The power simulation for `accuracy` suggested that even for as few as 10 participants (the minimum sample size we simulated data for), we would have a power of close to 100%. The simulation for `competence` suggested that we achieve statistical power of at least 90% with a sample size of `30`. Due to uncertainty about our assumptions and because it was within our budget, we recruited `r exp4_descriptives$n_subj` participants.
 
 ### Procedure
 
-After providing their consent to participate in the study and passing an attention check, participants read the following introduction: "To be able to understand the task, please read the following instructions carefully: Some people are playing games in which they have to select the correct answer among three answers. You will see the results of several of these games. Each game is different, with different solutions and involving different players. All players answer independently of each other. At first, you have no idea how competent each individual player is: they might be completely at chance, or be very good at the task. It's also possible that some players are really good while others are really bad. Some games might be difficult while others are easy. Your task will be to evaluate the performance of one of the players based on what everyone's answers are." They were then presented to the results of eight such games and had to answer questions (see Fig. \@ref(fig:stimulus-exp4)).
+After providing their consent to participate in the study and passing an attention check, participants read the following introduction: "To be able to understand the task, please read the following instructions carefully: Some people are playing games in which they have to select the correct answer among three answers. You will see the results of several of these games. Each game is different, with different solutions and involving different players. All players answer independently of each other. At first, you have no idea how competent each individual player is: they might be completely at chance, or be very good at the task. It's also possible that some players are really good while others are really bad. Some games might be difficult while others are easy. Your task will be to evaluate the performance of one of the players based on what everyone's answers are." They were then presented to the results of eight such games and had to answer questions (see Fig. \@ref(fig:stimulus-exp4)). To assess perceived accuracy, we asked: "What do you think is the probability of player 1 being correct?". Participants answered with a slider on a scale from 0 to 100. To assess perceived competence, we asked participants: "How competent do you think player 1 is in games like these?" Participants answered on a 7-point Likert scale (from (1)"not competent at all" to (2)"extremely competent").
 
-(ref:stimulus-exp4) An example of a stimulus for the majority condition
+(ref:stimulus-exp4) One set of stimuli by level of convergence. In the study, we used as second set of stimuli where each constellation was mirrored. A full set of stimuli can be found in Appendix \@ref(exp4).
 
 ```{r stimulus-exp4, echo=FALSE, fig.cap="(ref:stimulus-exp4)"}
-knitr::include_graphics("figures/example_stimulus_exp4.png")
+# Function to create a plot with image and title
+create_image_plot <- function(image_path, title) {
+  img <- rasterGrob(readPNG(image_path), interpolate = TRUE)
+  title_grob <- textGrob(title, gp = gpar(fontsize = 8, fontface = "bold"))
+
+  # Combine image and title in a single plot
+  plot <- ggplot() +
+    annotation_custom(img, xmin = 0, xmax = 1, ymin = 0, ymax = 1) +
+    annotation_custom(title_grob, xmin = 0, xmax = 1, ymin = 1, ymax = 1) +
+    theme_void()  # Set the panel background to be transparent
+
+  return(plot)
+}
+
+# File paths to four images
+image_paths <- c(
+  "Experiment_4/figures/stimuli/opp_majority_a.png",
+  "Experiment_4/figures/stimuli/divergence_a.png",
+  "Experiment_4/figures/stimuli/majority_a.png",
+  "Experiment_4/figures/stimuli/consensus_a.png"
+)
+
+# Titles for the images
+image_titles <- c(
+  "minority (0)", 
+  "dissensus (1)", 
+  "majority (2)", 
+  "consensus (3)"
+)
+
+# Create a list of plots
+plots <- lapply(seq_along(image_paths), function(i) {
+  create_image_plot(image_paths[i], image_titles[i])
+})
+
+# Arrange the plots in a grid
+grid.arrange(grobs = plots, ncol = 2)
 ```
 
 #### Design
 
 We manipulated convergence by varying the ratio of players choosing the same response as a focal player (i.e. the one that participants evaluate). The levels of convergence are: (i) consensus, where all three players pick the same option [`coded value = 3`]; (ii) majority, where either the third or second player picks the same option as the first player [`coded value = 2`]; (iii) dissensus, where all three players pick different options [`coded value = 1`]; (iv) majority against the focal player's estimate, where the second and third player pick the same option, but one that is different from the first player's choice [`coded value = 0`]. In our analysis, we treat convergence as a continuous variable, assigning the values in squared parenthesis.
 
-#### Stimuli
+Convergence was manipulated within participants. All participants saw all four conditions, with two stimuli per condition. Each participant therefore saw eight stimuli in total (4 convergence levels x 2 stimuli).
 
-We manipulate convergence within participants. All participants see all four conditions, with two stimuli per condition. Each participant therefore sees eight stimuli in total (4 convergence levels x 2 stimuli).
-
-#### Dependent variables
-
-To assess accuracy, we asked: "What do you think is the probability of player 1 being correct?". Participants answered with a slider on a scale from 0 to 100. As for competence, we asked participants: "How competent do you think player 1 is in games like these?" Participants answered on a 7-point Likert scale (from (1)"not competent at all" to (2)"extremely competent").
-
-### Results
+### Results and discussion
 
 To account from dependencies of observations due to our within-participant design, we ran mixed models, with random intercept and random slope for participants, using the `lme4` package and its `lmer()` function in R. Figure \@ref(fig:exp4-plot) visualizes the results and table \@ref(tab:exp4-table) contains descriptive results.
 
-As in the numerical setting, we found a positive effect of convergence on both accuracy (Accuracy = `r exp4_descriptives$model_accuracy$convergence$estimate` `r exp4_descriptives$model_accuracy$convergence$ci`, p = `r exp4_descriptives$model_accuracy$convergence$p.value`) and competence (Competence = `r exp4_descriptives$model_competencey$convergence$estimate` `r exp4_descriptives$model_competence$convergence$ci`, p = `r exp4_descriptives$model_competence$convergence$p.value`).
-
-```{r exp4-table}
-exp4 %>% 
-  group_by(convergence_categorical, convergence) %>% 
-  summarise(across(c(competence, accuracy), list(mean = mean, sd = sd))) %>% 
-  rounded_numbers() %>% 
-  mutate(Accuracy = paste0(accuracy_mean, " (sd = ", accuracy_sd, ")"),
-         Competence = paste0(competence_mean, " (sd = ", competence_sd, ")"),
-         Convergence = paste0(convergence_categorical, " (", convergence, ")")
-         ) %>% 
-  ungroup() %>% 
-  select(Convergence, Accuracy, Competence) %>% 
-  apa_table()
-```
+As in the numerical setting, we found a positive effect of convergence on both accuracy (Accuracy = `r exp4_descriptives$model_accuracy$convergence$estimate` `r exp4_descriptives$model_accuracy$convergence$ci`, p = `r exp4_descriptives$model_accuracy$convergence$p.value`; on a scale from 0 to 100) and competence (Competence = `r exp4_descriptives$model_competence$convergence$estimate` `r exp4_descriptives$model_competence$convergence$ci`, p = `r exp4_descriptives$model_competence$convergence$p.value`; on a scale from 1 to 7).
 
 (ref:exp4-plot) Distributions of accuracy and competence by level of convergence.
 
@@ -943,7 +766,7 @@ exp5_descriptives <- list(
 )
 ```
 
-In line with our findings in numerical choice settings, we predicted that:
+Experiment 5 is a conceptual replication of Experiment 3 in the categorical instead of numerical case: are participants less likely to infer that more convergent estimates are more accurate, and the individuals who made them more competent, when the estimates are made by individuals with a conflict of interest pushing them to all provide a given answer, compared to when they are made by independent participants? The independence condition of Experiment 5 also serves as a replication of Experiment 4, leading to the following hypotheses:
 
 ***H1a: Participants perceive an estimate of an independent informant as more accurate the more it converges with the estimates of other informants.***
 
@@ -955,91 +778,27 @@ In line with our findings in numerical choice settings, we predicted that:
 
 ### Participants
 
-We ran a power simulation to inform our choice of sample size. All assumptions and details on the procedure can be found in the `power_Exp5.Rmd` document. We ran two different power analyses, one for each outcome variable. We set the power threshold for our experiment to 90%.
+We ran a power simulation to inform our choice of sample size. All assumptions and details on the procedure can be found on the OSF. We ran two different power analyses, one for each outcome variable. We set the power threshold for both to 90%.
 
 The power simulation for `accuracy` suggested that for 80 participants, we would have a power of at least 90% for the interaction effect. The simulation for `competence` suggested that with already 40 participants, we would detect an interaction, but only with 60 participants we also detect an effect of convergence. Due to uncertainty about our assumptions and because resources were available for a larger sample, we recruited `r exp5_descriptives$n_subj` participants.
 
 ### Procedure
 
-After providing their consent to participate in the study and passing an attention check, participants read the following introduction: "We will show you three financial advisors who are giving recommendations on investment decisions. They can choose between three investment options. Their task is to recommend one. You will see several such situations. They are completely unrelated: it is different advisors evaluating different investments every time. At first you have no idea how competent the advisors are: they might be completely at chance, or be very good at the task. It's also possible that some are really good while others are really bad. Some tasks might be difficult while others are easy. Your task will be to evaluate the performance of one of the advisors based on what everyone's answers are." They were then presented to the results of eight such games and had to answer questions (see Fig. \@ref(fig:stimulus-exp4)).
+After providing their consent to participate in the study and passing an attention check, participants read the following introduction: "We will show you three financial advisors who are giving recommendations on investment decisions. They can choose between three investment options. Their task is to recommend one. You will see several such situations. They are completely unrelated: it is different advisors evaluating different investments every time. At first you have no idea how competent the advisors are: they might be completely at chance, or be very good at the task. It's also possible that some are really good while others are really bad. Some tasks might be difficult while others are easy. Your task will be to evaluate the performance of one of the advisors based on what everyone's answers are."
+
+To assess perceptions of accuracy, we asked: "What do you think is the probability of advisor 1 making the best investment recommendation?". Participants answered with a slider on a scale from 0 to 100. To assess perceptions of accuracy, we asked: "How competent do you think advisor 1 is regarding such investment recommendations?" Participants answered on a 7-point Likert scale (from (1)"not competent at all" to (2)"extremely competent").
 
 #### Design
 
-We manipulated convergence within participants in the same way we did in experiment 4. In addition, between participants, we manipulated informational dependence, akin to experiment 3. In the biased condition, experts were described to gain personally from recommending a certain investment option - but without specifying what that option is. In the independent condition, there was no such conflict of interest and experts were described as independent.
+We manipulated convergence within participants, and conflict of interest between participants. In the conflict of interest condition, experts were introduced this way: "The three advisors have already invested in one of the three options, the same option for all three. As a result, they have an incentive to push that option in their recommendations." For the independence condition: "The three advisors are independent of each other, and have no conflict of interest in making investment recommendations."
 
-```{r}
-# Participants read only one of these introductions before seeing the sets of estimates, depending on which condition they had been assigned to
-data.frame(
-  Condition = c("Independence condition", "Conflict of interest condition"),
-  Description = c(
-    "The three advisors are independent of each other, and have no conflict of interest in making investment recommendations.",
-    "The three advisors have already invested in one of the three options, the same option for all three. As a result, they have an incentive to push that option in their recommendations."
-  )
-) #%>% 
-  # apa_table(align = c("m{3cm}", "m{12cm}")) 
-```
+Participants saw all four convergence conditions (identical to those of Experiment 4), with two stimuli (i.e. game results) per condition. Each participant therefore saw eight stimuli in total (4 convergence levels x 2 stimuli).
 
-#### Stimuli
+### Results and discussion
 
-Identical to experiment 4, all participants see all four conditions, with two stimuli (i.e. game results) per condition. Each participant therefore sees eight stimuli in total (4 convergence levels x 2 stimuli).
+To account for dependencies of observations due to our within-participant design, we ran mixed models, with a random intercept and a random slope for convergence for participants, using the `lme4` package and its `lmer()` function in R.
 
-#### Dependent variables
-
-To assess accuracy, we asked participants: "What do you think is the probability of advisor 1 making the best investment recommendation?". Participants answered with a slider on a scale from 0 to 100. As for competence, we asked participants: "How competent do you think advisor 1 is regarding such investment recommendations?" Participants answered on a 7-point Likert scale (from (1)"not competent at all" to (2)"extremely competent").
-
-### Results
-
-To account for dependencies of observations due to our within-participant design, we ran mixed models, with a random intercept and a random slope for convergence for participants, using the `lme4` package and its `lmer()` function in R. Figure \@ref(fig:exp5-plot) visualizes the results and table \@ref(tab:exp5-table) contains descriptive results.
-
-Akin to the results of experiment 3 in the numerical setting, we find evidence for all four hypotheses. As for the first set of hypotheses, to match the setting of experiment one, we reduced the sample to half of the participants, namely those who were assigned to the independence condition. On this reduced sample, we ran the exact same analyses as in experiment 4 and replicated the results (see blue colored distributions in Fig. \@ref(fig:exp5-plot)). We find a positive effect of convergence on both accuracy (Convergence = `r exp5_descriptives$model_h1_accuracy$convergence$estimate` `r exp5_descriptives$model_h1_accuracy$convergence$ci`, p = `r exp5_descriptives$model_h1_accuracy$convergence$p.value`) and competence (Convergence = `r exp5_descriptives$model_h1_competence$convergence$estimate` `r exp5_descriptives$model_h1_competence$convergence$ci`, p = `r exp5_descriptives$model_h1_competence$convergence$p.value`). The second set of hypotheses targeted the interaction of informational dependency and convergence (for a visual representation of these interactions, see Fig. \@ref(fig:exp5-plot)). In the independence condition, the effect of convergence on accuracy was more positive ($\Delta$ Convergence = `r exp5_descriptives$model_accuracy$interaction$estimate` `r exp5_descriptives$model_accuracy$interaction$ci`, p = `r exp5_descriptives$model_accuracy$interaction$p.value`) than in the conflict of interest condition (Convergence = `r exp5_descriptives$model_accuracy$convergence$estimate` `r exp5_descriptives$model_accuracy$convergence$ci`, p = `r exp5_descriptives$model_accuracy$convergence$p.value`). Likewise, the effect of convergence on competence was more positive ($\Delta$ Convergence = `r exp5_descriptives$model_competence$interaction$estimate` `r exp5_descriptives$model_competence$interaction$ci`, p = `r exp5_descriptives$model_competence$interaction$p.value`) than in the conflict of interest condition (Convergence = `r exp5_descriptives$model_competence$convergence$estimate` `r exp5_descriptives$model_competence$convergence$ci`, p = `r exp5_descriptives$model_competence$convergence$p.value`).
-
-```{r exp5-table}
-exp5_accuracy <- exp5 %>% 
-  mutate(Convergence = paste0(convergence_categorical, " (", convergence, ")")) %>% 
-  group_by(independence, Convergence, convergence) %>% 
-  summarise(across(accuracy, list(mean = mean, sd = sd))) %>% 
-  rounded_numbers() %>% 
-  mutate(Accuracy = paste0(accuracy_mean, " (sd = ", accuracy_sd, ") ")) %>% 
-  select(independence, Accuracy, Convergence, convergence) %>% 
-mutate(independence = ifelse(independence == "conflict of interest", "Conflict of interest", 
-                "Independent") 
-         ) %>% 
-  pivot_wider(names_from = independence,
-              values_from = Accuracy) %>% 
-  arrange(convergence) %>% 
-  ungroup() %>% 
-  select(-convergence) %>% 
-  rename(" " = Convergence) %>% 
-  as.matrix()
-
-exp5_competence <- exp5 %>% 
-  mutate(Convergence = paste0(convergence_categorical, " (", convergence, ")")) %>% 
-  group_by(independence, Convergence, convergence) %>% 
-  summarise(across(competence, list(mean = mean, sd = sd))) %>% 
-  rounded_numbers() %>% 
-  mutate(Competence = paste0(competence_mean, " (sd = ", competence_sd, ") ")) %>% 
-  select(independence, Competence, Convergence, convergence) %>% 
-mutate(independence = ifelse(independence == "conflict of interest", "Conflict of interest", 
-                "Independent") 
-         ) %>% 
-  pivot_wider(names_from = independence,
-              values_from = Competence) %>% 
-  ungroup() %>% 
-  arrange(convergence) %>% 
-  select(-c(convergence, Convergence)) %>% 
-  as.matrix()
-
-table <- cbind(exp5_accuracy, exp5_competence)
-
-table %>%
-  kable(booktabs = TRUE, 
-        # need to add a (empty) caption for cross referencing to work
-        caption = "") %>%
-  kable_styling() %>% 
-  add_header_above(c("", "Accuracy" = 2, "Competence" = 2)) %>%
-  # make smaller to fit
-  kable_styling(latex_options = "scale_down") 
-```
+We find evidence for all four hypotheses (see Fig. \@ref(fig:exp5-plot)). To test H1a and H1b, we use the same analyses as in Experiment 4, replicating the results. We find a positive effect of convergence on both accuracy (Convergence = `r exp5_descriptives$model_h1_accuracy$convergence$estimate` `r exp5_descriptives$model_h1_accuracy$convergence$ci`, p = `r exp5_descriptives$model_h1_accuracy$convergence$p.value`) and competence (Convergence = `r exp5_descriptives$model_h1_competence$convergence$estimate` `r exp5_descriptives$model_h1_competence$convergence$ci`, p = `r exp5_descriptives$model_h1_competence$convergence$p.value`). The second set of hypotheses targeted the interaction of informational dependency and convergence (for a visual representation of these interactions, see Fig. \@ref(fig:exp5-plot)). In the independence condition, the effect of convergence on accuracy was more positive ($\Delta$ Convergence = `r exp5_descriptives$model_accuracy$interaction$estimate` `r exp5_descriptives$model_accuracy$interaction$ci`, p = `r exp5_descriptives$model_accuracy$interaction$p.value`) than in the conflict of interest condition (Convergence = `r exp5_descriptives$model_accuracy$convergence$estimate` `r exp5_descriptives$model_accuracy$convergence$ci`, p = `r exp5_descriptives$model_accuracy$convergence$p.value`). Likewise, the effect of convergence on competence was more positive ($\Delta$ Convergence = `r exp5_descriptives$model_competence$interaction$estimate` `r exp5_descriptives$model_competence$interaction$ci`, p = `r exp5_descriptives$model_competence$interaction$p.value`) than in the conflict of interest condition (Convergence = `r exp5_descriptives$model_competence$convergence$estimate` `r exp5_descriptives$model_competence$convergence$ci`, p = `r exp5_descriptives$model_competence$convergence$p.value`).
 
 (ref:exp5-plot) Interaction of convergence and informational dependency.
 
@@ -1106,11 +865,17 @@ exp6_model_h1_competence = lmer(competence ~ convergence + (1 + convergence | id
 
 # H2 
 # run mixed model (random slope and intercept) with participants as random factor
-exp6_model_accuracy = lmer(accuracy ~ convergence + number_options + 
-                            number_options*convergence + (1 + convergence | id), 
+
+# For this model, we effect code `number_options`, so that we get a coefficient 
+# for the main effect of convergence as well as for the interaction
+exp6 <- exp6 %>% 
+  mutate(number_options_effect_code = recode(number_options, "three" = -0.5, "ten" = +0.5))
+
+exp6_model_accuracy = lmer(accuracy ~ convergence + number_options_effect_code + 
+                            number_options_effect_code*convergence + (1 + convergence | id), 
                        data = exp6)
-exp6_model_competence = lmer(competence ~ convergence + number_options + 
-                            number_options*convergence + (1 + convergence | id), 
+exp6_model_competence = lmer(competence ~ convergence + number_options_effect_code + 
+                            number_options_effect_code*convergence + (1 + convergence | id), 
                        data = exp6)
 
 # extract descriptives for inline reporting
@@ -1123,6 +888,8 @@ exp6_descriptives <- list(
   model_accuracy = text_ready(exp6_model_accuracy), 
   model_competence = text_ready(exp6_model_competence)
 )
+
+summary(exp6_model_accuracy)
 ```
 
 Experiment four and five tested if the results from the first series of experiments hold in a categorical choice setting. In Experiment six we tested a new context factor: the number of choice options. In experiments four and five, scenarios always involved three choice options. Here, we varied between three and ten options. The design we use to manipulate convergence is otherwise identical to experiment 4 (players playing games).
@@ -1135,135 +902,49 @@ First, considering only the three options condition, we ran a direct replication
 
 ### Participants
 
-We ran a power simulation to inform our choice of sample size. All assumptions and details on the procedure can be found in the `power_Exp6.Rmd` document. We used previous experiments and estimates of our models to inform our choice of parameter values. We ran two different power analyses, one for each outcome variable. We set the power threshold for our experiment to 90%. The power simulation for `accuracy` suggested that for 140 participants we would cross the power threshold of 90% for the interaction effect (power = 0.928). The simulation for `competence` suggested that with 300 participants, we would detect an interaction with a power of 87% (power = 0.872). Due to budget constraints, we considered a sample of 300 participants as good enough, although slightly below our threshold.
+We ran a power simulation to inform our choice of sample size. All assumptions and details on the procedure can be found on the OSF. We used previous experiments and estimates of our models to inform our choice of parameter values. We ran two different power analyses, one for each outcome variable. We set the power threshold for our experiment to 90%. The power simulation for `accuracy` suggested that for 140 participants we would cross the power threshold of 90% for the interaction effect (power = 0.928). The simulation for `competence` suggested that with 300 participants, we would detect an interaction with a power of 87%. Due to budget constraints, we considered a sample of 300 participants as good enough, although slightly below our threshold.
 
 ### Procedure
 
-We used the same experimental setting as in experiment 4.
+We used the same procedure as in Experiment 4, with the addition of one condition described below.
 
 #### Design
 
-We manipulated convergence within participants in the same way we did in experiment 4. In addition, between participants, we manipulated the number of choice options. Participants were randomly assigned to either to see stimuli with '3' options, or with '10' options. Participants assigned to the '10' options condition, participants were assigned to one of two distinct sub-conditions: one in which the range of the answers corresponds to the range of the '3' options condition, and another with increased range (see Appendix XX). We added the increased range condition because we anticipated the possibility that participants might not consider all options as relevant when they only see scenarios in which all answers cluster. We found no differences between the two sub-conditions and collapsed them into a single '10' options condition.
+The number of choice options was manipulated between participants. Participants were randomly assigned to either to see stimuli with three options (as in Experiment 4), or with ten options. Participants assigned to the ten options condition were divided into one of two distinct sub-conditions: one in which the range of the answers corresponds to the range of the three options condition, and another with increased range (see Appendix \@ref(exp6)). We found no differences between the two sub-conditions and collapsed them into a single ten options condition.
 
-```{r stimuli-options, echo=FALSE}
-# Create a matrix of image file paths as Markdown-formatted strings
-image_paths <- data.frame(
-  imgage_a = c("![](stimuli/Experiment_6/stimuli_Exp6/consensus_3_a.png){ width=60% }"),
-  imgage_b = c("![](stimuli/Experiment_6/stimuli_Exp6/consensus_10_a.png){ width=60% }")
-  )
+### Results and discussion
 
-# Use kable() to create the table and print it as Markdown
-kableExtra::kable(image_paths, format = "markdown",
-                  col.names = c("Number of options: 3", "Number of options: 10"), 
-                  align = "l",
-                  caption = "Example of a consensus stimulus for the two 'Number of option' conditions") %>%
-  # make smaller to fit
-  kable_styling(latex_options = "scale_down") 
-```
+To account for dependencies of observations due to our within-participant design, we ran mixed models, with a random intercept and a random slope for convergence for participants, using the `lme4` package and its `lmer()` function in R.
 
-#### Stimuli
+We replicate the results of experiment 4, but do not find evidence for an interaction between convergence and the number of choice options. To match the setting of experiment one, we reduced the sample to half of the participants, namely those who were assigned to the three options condition. On this reduced sample, we ran the exact same analyses as in experiment 4 and replicated the results (see orange colored distributions in Fig. \@ref(fig:exp6-plot)). We find a positive effect of convergence on both accuracy (Convergence = `r exp6_descriptives$model_h1_accuracy$convergence$estimate` `r exp6_descriptives$model_h1_accuracy$convergence$ci`, p = `r exp6_descriptives$model_h1_accuracy$convergence$p.value`) and competence (Convergence = `r exp6_descriptives$model_h1_competence$convergence$estimate` `r exp6_descriptives$model_h1_competence$convergence$ci`, p = `r exp6_descriptives$model_h1_competence$convergence$p.value`).
 
-Identical to experiment 4, all participants saw all four conditions, with two stimuli (i.e. game results) per condition. Each participant therefore saw eight stimuli in total (4 convergence levels x 2 stimuli).
+This finding also holds when looking at main effects of convergence across the entire sample ($beta_\text{Accuracy}$ = `r exp6_descriptives$model_accuracy$convergence$estimate` `r exp6_descriptives$model_accuracy$convergence$ci`, `r exp6_descriptives$model_accuracy$convergence$p.value`; $beta_\text{Competence}$ = `r exp6_descriptives$model_competence$convergence$estimate` `r exp6_descriptives$model_competence$convergence$ci`, `r exp6_descriptives$model_competence$convergence$p.value`). We do not find evidence of an interaction, i.e. evidence that the number of choice options alters the effect of convergence ($beta_\text{Accuracy}$ = `r exp6_descriptives$model_accuracy$interaction$estimate` `r exp6_descriptives$model_accuracy$interaction$ci`, `r exp6_descriptives$model_accuracy$interaction$p.value`; $beta_\text{Competence}$ = `r exp6_descriptives$model_competence$interaction$estimate` `r exp6_descriptives$model_competence$interaction$ci`, `r exp6_descriptives$model_competence$interaction$p.value`).
 
-#### Dependent variables
+## General discussion
 
-We used the same items as in experiment 4. To assess accuracy, we asked: "What do you think is the probability of player 1 being correct?". Participants answered with a slider on a scale from 0 to 100. As for competence, we asked participants: "How competent do you think player 1 is in games like these?" Participants answered on a 7-point Likert scale (from (1)"not competent at all" to (2)"extremely competent").
+In two experiments (Experiment 1, and independence condition of Experiment 3), we find that participants presented with a set of more (rather than less) convergent numerical estimates find the estimates more accurate, and the individuals making the estimates more competent. Participants thus appear to draw normatively justified inferences. Experiment 2 suggests that participants do not think that a discussion between the individuals making the estimates could explain away the convergence of their estimates. By contrast, Experiment 3 reveals that, when the individuals making the estimates are systematically biased by a conflict of interest, then participants put less weight on the convergence of their estimates to infer that the estimates are accurate, or that the individuals making them are competent.
 
-### Results
+Similar results are obtained in a categorical choice context, in which participants see the answers of individuals made within a limited set of options. Experiments 4, 5, and 6 show that, the more the answers converge, the more they are thought to be accurate, and the more the individuals who made them are thought to be competent. Experiment 5 shows that these inferences are weakened when the convergence can be explained by a conflict of interest (as in Experiment 4). Experiment 6 fails to find an effect of the number of options.
 
-To account for dependencies of observations due to our within-participant design, we ran mixed models, with a random intercept and a random slope for convergence for participants, using the `lme4` package and its `lmer()` function in R. Figure \@ref(fig:exp5-plot) visualizes the results and table \@ref(tab:exp5-table) contains descriptive results.
+## Conclusion
 
-We replicate the results of experiment 4, but do not find evidence for an interaction between convergence and the number of choice options. To match the setting of experiment one, we reduced the sample to half of the participants, namely those who were assigned to the three options condition. On this reduced sample, we ran the exact same analyses as in experiment 4 and replicated the results (see orange colored distributions in Fig. \@ref(fig:exp6-plot)). We find a positive effect of convergence on both accuracy (Convergence = `r exp6_descriptives$model_h1_accuracy$convergence$estimate` `r exp6_descriptives$model_h1_accuracy$convergence$ci`, p = `r exp6_descriptives$model_h1_accuracy$convergence$p.value`) and competence (Convergence = `r exp6_descriptives$model_h1_competence$convergence$estimate` `r exp6_descriptives$model_h1_competence$convergence$ci`, p = `r exp6_descriptives$model_h1_competence$convergence$p.value`). We do not find evidence that the number of choice options alters the effect of convergence on either accuracy or competence.
+When people see that others agree with each other, they tend to believe that they are right. This inference has been evidenced in several experiments, both for numerical estimates (refs), and for categorical choices (refs). However, in these experiments, the participants arguably assumed a degree of competence among the individuals whose answers they saw. For instance, when children are confronted with several individuals who agree on how to name a novel object (e.g. ref), they can assume that these (adult) individuals tend to know what the name of objects is. If the competence of the individuals is assumed, then well-known results from the literature on judgment aggregation--the wisdom of crowds--show that the average opinion of a set of individuals is, in a wide range of circumstances, more likely to be accurate than that of a single individual (ref).
 
-```{r exp6-table}
-exp6_accuracy <- exp6 %>% 
-  mutate(Convergence = paste0(convergence_categorical, " (", convergence, ")")) %>% 
-  group_by(number_options, Convergence, convergence) %>% 
-  summarise(across(accuracy, list(mean = mean, sd = sd))) %>% 
-  rounded_numbers() %>% 
-  mutate(Accuracy = paste0(accuracy_mean, " (sd = ", accuracy_sd, ") ")) %>% 
-  select(number_options, Accuracy, Convergence, convergence) %>% 
-mutate(number_options = ifelse(number_options == "three", "3 options", 
-                "10 options") 
-         ) %>% 
-  pivot_wider(names_from = number_options,
-              values_from = Accuracy) %>% 
-  arrange(convergence) %>% 
-  ungroup() %>% 
-  select(-convergence) %>% 
-  rename(" " = Convergence) %>% 
-  as.matrix()
+Here, we do not assume that the individuals answering are competent, asking the question: if we see a set of individuals, whose competence is unknown, converge on the same answer, is it rational to infer that this answer is more likely to be correct, and that the individuals are likely to be competent? We show that the answer is yes on both counts--assuming there is no systematic bias among the individuals answering. A series of XXX [math, simulations], reveal that, for both the numerical choice context and the categorical choice context, the more individuals agree on an answer, the more likely the answers are to be correct, the more likely the individuals are to be competent, with the former effect being stronger than the latter. Moreover, this is true for a wide range of distributions of competence. This means that, unless there are reasons to believe that the convergence of the answers is due to some external cause, such as a common bias among the individuals, people can safely infer that the more answers tend to converge, the more they are likely to be correct, and the more likely they are to have been made by competent individuals.
 
-exp6_competence <- exp6 %>% 
-  mutate(Convergence = paste0(convergence_categorical, " (", convergence, ")")) %>% 
-  group_by(number_options, Convergence, convergence) %>% 
-  summarise(across(competence, list(mean = mean, sd = sd))) %>% 
-  rounded_numbers() %>% 
-  mutate(Competence = paste0(competence_mean, " (sd = ", competence_sd, ") ")) %>% 
-  select(number_options, Competence, Convergence, convergence) %>% 
-mutate(number_options = ifelse(number_options == "three", "3 options", 
-                "10 options") 
-         ) %>% 
-  pivot_wider(names_from = number_options,
-              values_from = Competence) %>% 
-  ungroup() %>% 
-  arrange(convergence) %>% 
-  select(-c(convergence, Convergence)) %>% 
-  as.matrix()
+In a set of experiments, we show that participants (US) draw these inferences: when presented with more convergent answers, they tend to believe the answers are more likely to be correct, and that the individuals who made them are more likely to be competent. This is true for numerical estimates and for categorical answers. These beliefs are weakened when the individuals making the estimates are systematically biased by a common conflict of interest (Experiments 3 and 5), but not by a potential source of dependence between the individuals (discussion, Experiment 2). Finally, these beliefs are not strengthened when the number of individuals whose answers are converging increases, which might not be very surprising given that the effects of this number tend to plateau quite early in the simulations.
 
-table <- cbind(exp6_accuracy, exp6_competence)
+The results--both simulations and experiments--are a novel contribution to the wisdom of crowd literature. In this literature--in particular that relying on the Condorcet Jury Theorem--a degree of competence is assumed in the individuals providing some answers. From that competence, it can be inferred that the individuals will tend to agree, and that their answers will tend to be accurate. Here we show that the reverse inference--from agreement to competence--is also warranted. We also show that participants, by and large, are able to draw rational inferences, inferring accuracy and competence from an observation of convergence, and doing so more when there are no alternative explanations for the observed convergence.
 
-table %>%
-  kable(booktabs = TRUE, 
-        # need to add a (empty) caption for cross referencing to work
-        caption = "") %>%
-  kable_styling() %>% 
-  add_header_above(c("", "Accuracy" = 2, "Competence" = 2)) %>%
-  # make smaller to fit
-  kable_styling(latex_options = "scale_down") 
-```
+People might draw this inference in a variety of contexts, but the most prominent one might be science. Science is, arguably, the institution in which individuals end up converging the most in their opinions. For instance, scientists within the relevant disciplines agree on things ranging from the distance between the solar system and the center of the galaxy to the atomic structure of DNA. This represents an incredible degree of convergence. When people hear that scientists have measured the distance between the solar system and the center of the galaxy, if they assume that there is a broad agreement within the relevant experts, this should lead them to infer that this measure is accurate, and that the scientists who made it are competent. Experiments have already shown that increasing the degree of perceived consensus among scientists tends to increase acceptance of the consensual belief [@vanstekelenburgScientificConsensusCommunicationContested2022; @deryuginaEffectInformationProvision2016; @dixonApplyingGatewayBelief2016; @kerrChangesPerceivedScientific2018; @lewandowskyPivotalRolePerceived2013; @vanderlindenHighlightingConsensusMedical2015a; @vanderlindenScientificConsensusClimate2015; @vanderlindenHowCommunicateScientific2014; but see @dixonImprovingClimateChange2017; @landrumExaminingImpactExpert2019], but it hasn't been shown that the degree of consensus also affects the perceived competence of scientists.
 
-(ref:exp6-plot) Interaction of convergence and informational dependency.
+In the case of science, the relationship between convergence and accuracy is broadly justified. However, at some points of history, there has been broad agreement on misbeliefs, such as when Christian theologians had calculated that the Earth was approximately six thousand years old. To the extent that people were aware of this broad agreement, and believed the theologians to have reached it independently of each other, this might have not only fostered acceptance of this estimate of the age of the Earth, but also a perception of the theologians as competent.
 
-```{r exp6-plot, fig.cap="(ref:exp6-plot)"}
-# colors were identified with the wesanderson package (library(wesanderson)) as:
-# wes_palette("Zissou1", 100, type = "continuous")[A number]
+The current study has a number of limitations. If the very abstract materials allow us to remove most of the priors the participants might have, they might also reduce the ecological validity of the experiments. Although the main results replicate well, and we can thus be reasonably certain of their robustness with the present samples, it's not clear how much they can be generalized. Experimental results with convenience samples can usually be generalized at least to the broader population the samples were drawn from (here, Americans) [@coppockGeneralizingSurveyExperiments2019]. However, we do not know whether they would generalize to other cultures.
 
-# plot for accuracy
-plot_accuracy <- ggplot(exp6,
-       aes(x = convergence_categorical, y = accuracy, fill = number_options)) +
-  geom_half_violin(position = position_nudge(x = -.2),
-                   adjust=2, alpha = .4,
-                   side = "l") +
-  stat_summary(fun = "mean", geom = "point", size = 2, shape = 21) +
-  stat_summary(fun = "mean", geom = "line", size = 1, linetype = "dashed") +
-  stat_summary(fun.data = "mean_se", geom = "errorbar", width = .2) +
-  # Add nice labels
-  labs(x = "Convergence", y = "Accuracy", fill = NULL) +
-  scale_fill_manual(values = c("#EE3800", "#3D9BB2"), 
-                    name = "Number of choice options: ") +
-  plot_theme + 
-  theme(axis.text.x = element_text(angle = 20, hjust = 1))
+Future studies could overcome these limitations by replicating the present results in different cultures, using more ecologically valid stimuli. For instance, it would be interesting to test whether the inference described here, from convergence to competence, might be partly responsible for the fact that people tend to believe scientists to be competent [REF MANY LABS PRE-PRINT].
 
-# plot for competence
-plot_competence <- ggplot(exp6,
-       aes(x = convergence_categorical, y = competence, fill = number_options)) +
-  geom_half_violin(position = position_nudge(x = -.2),
-                   adjust=2, alpha = .4,
-                   side = "l") +
-  stat_summary(fun = "mean", geom = "point", size = 2, shape = 21) +
-  stat_summary(fun = "mean", geom = "line", size = 1, linetype = "dashed") +
-  stat_summary(fun.data = "mean_se", geom = "errorbar", width = .2) +
-  # Add nice labels
-  labs(x = "Convergence", y = "Competence", fill = NULL) +
-  scale_fill_manual(values = c("#EE3800", "#3D9BB2")) +
-  plot_theme + 
-  theme(axis.text.x = element_text(angle = 20, hjust = 1))
-
-ggpubr::ggarrange(plot_accuracy, plot_competence, common.legend = TRUE)
-```
-
-# Discussion
+# Stuff
 
 This literature review shows that there is evidence for both adults and children to be susceptible to convergence. It is not always clear, however, whether people infer accuracy from. It also shows (although not really outlined above) that this is only true in boundary conditions - when no bettter information (e.g. strong priors) or information about the competence o informants is available.
 
@@ -1299,195 +980,42 @@ The authors declare having no competing interests.
 
 # References
 
-<div id="refs"></div>
+::: {#refs}
+:::
 
 \newpage
 
-# Appendix A {simulations}
+# (APPENDIX) Appendix {.unnumbered}
 
-Are we justified in inferring competence and accuracy from convergence? To provide a normative answer, we ran simulations, intended to mirror our experimental setup. We find that - under certain conditions - more convergent groups indeed tend to be more competent and accurate. In this appendix, we describe these simulations in detail. 
-
-## Numerical choice context
-
-
-```{r read-simulation-data-numeric, message=FALSE}
-# read data from simulations
-simulation_numeric <- read_csv("Experiment_1/data/sim.csv")
+```{r child = "appendix_exp1.Rmd"}
 ```
 
-When several people estimate a quantity (numeric scenario), their convergence can be measured for example by the empirical variance. The closer the estimates, i.e. the smaller the empirical variance, the greater convergence. This measure is at the group level.
+\clearpage
 
-To provide a normative answer, we ran simulations for a scenario in which individuals provide an estimate on a scale from 1000 to 2000. In our simulations, we suppose that an individual’s answer is drawn from a normal distribution. Each individual has their own normal distribution. All normal distributions are centered around the true answer - but they differ in their standard deviations. The value of that standard deviation is what we define as an individual’s competence. The lower the standard deviation, the higher the competence, i.e. the more likely a guess drawn from the normal distribution will be close to the true answer. We (arbitrarily) define a range of competence: we set the lowest competence equal to the range of possible values, i.e.the largest standard deviation (2000 - 1000) = 1000. We set the highest competence to 0.1% of the range of possible values, i.e.the smallest standard deviation (0.001 x 1000) = 1 (see Fig. \@ref(fig:example-competence-numeric)). 
-
-(ref:example-competence-numeric) Range of possible data generating functions for individuals. 
-
-```{r example-competence-numeric, fig.cap="(ref:example-competence-numeric)", out.width= "75%"}
-# Define the x-axis values
-x <- seq(1000, 2000, length.out = 1000)
-
-# Define the PDFs for the two distributions
-high_competence_pdf <- dnorm(x, mean = 1500, sd = 1)
-low_competence_pdf <- dnorm(x, mean = 1500, sd = 1000)
-
-# Create the plot
-ggplot() +
-  geom_line(aes(x, high_competence_pdf, color = "Highest Competence Individual \n (SD = 1, Mean = 1500)"), size = 1) +
-  geom_line(aes(x, low_competence_pdf, color = "Lowest Competence Individual \n (SD = 1000, Mean = 1500)"), size = 1) +
-  labs(x = "Competence Level", y = "Density", color = "Data generating function for") +
-  ggtitle("Competence Level Distributions") +
-  scale_color_manual(values = c("Highest Competence Individual \n (SD = 1, Mean = 1500)" = "blue", 
-                                "Lowest Competence Individual \n (SD = 1000, Mean = 1500)" = "red")) +
-  theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5))
+```{r child = "appendix_exp2.Rmd"}
 ```
 
-We suppose that individual competence levels are drawn from a competence distribution, which can be expressed by a beta distribution. This competence distribution can take vary different shapes, depending on the alpha and beta parameters that describe the distribution (see fig. \@ref(fig:competence-distributions)).
+\clearpage
 
-(ref:competence-distributions) The different population competence distributions we considered in our simulations.
-
-```{r competence-distributions, fig.cap="(ref:competence-distributions)", out.width= "75%"}
-plot_competence_distributions(simulation_numeric)
+```{r child = "appendix_exp3.Rmd"}
 ```
 
-We draw an estimate for each individual based on their respective competence distribution. For each individual, we then measure accuracy as the (squared) distance between their estimate and the true answer. Having a competence and an accuracy value for each individual, we randomly assign individuals to groups of three. For each group, we calculate the average of the three individuals' competence and accuracy. We measure the convergence of a group by calculating the standard deviation of the estimates. We run this simulation on a sample size of roughly 100000 (varying slightly as a function of sample size). We repeat this simulation process for various sample sizes and competence distributions. The results are displayed in Fig. \@ref(fig:simulation-accuracy-numeric-1) to \@ref(fig:simulation-accuracy-numeric-6), for accuracy, and Fig. \@ref(fig:simulation-competence-numeric-1) to \@ref(fig:simulation-competence-numeric-6), for competence. Across all underlying competence distributions, we find a positive correlation between convergence and accuracy, which tends towards 1 as sample size increases (see Fig. \@ref(fig:simulation-numeric-correlations)). As for accuracy, we find a positive correlation between convergence and competence across all underlying competence distributions. However, this correlations are weaker than for accuracy, and do not increase with sample size (see Fig. \@ref(fig:simulation-numeric-correlations)).
+\clearpage
 
-(ref:simulation-numeric-correlations) Correlation between accuracy (left) or competence (right) and convergence, as a function of sample size, grouped by the data underlying competence distributions. 
-
-```{r simulation-numeric-correlations, fig.cap="(ref:simulation-numeric-correlations)", out.width="75%"}
-# calculate correlations
-simulation_numeric <- simulation_numeric %>% 
-  group_by(competence, sample) %>% 
-  mutate(correlation_accuracy = cor(accuracy_mean, convergence), 
-         correlation_competence = cor(competence_mean, convergence)) %>% 
-  ungroup()
-
-# accuracy plot
-accuracy_plot <- ggplot(simulation_numeric, aes(x = sample, y = correlation_accuracy, color = competence)) +
-  geom_point() + 
-  geom_line(alpha = 0.5) + 
-  labs(y = "Correlation: Accuracy/Convergence", 
-       x = "Sample size", 
-       color = "Competence distribution") +
-  scale_y_continuous(limits = c(0, 1)) +
-  scale_color_brewer(palette = "Set1") +
-  plot_theme + 
-  theme(
-    legend.title = element_text(size = 10),
-    legend.text = element_text(size = 8))
-
-# competence plot
-competence_plot <- ggplot(simulation_numeric, aes(x = sample, y = correlation_competence, color = competence)) +
-  geom_point() + 
-  geom_line(alpha = 0.5) + 
-  labs(y = "Correlation: Competence/Convergence", 
-       x = "Sample size", 
-       color = "Competence distribution") +
-  scale_y_continuous(limits = c(0, 1)) +
-  scale_color_brewer(palette = "Set1") +
-  plot_theme + 
-  theme(
-    legend.title = element_text(size = 10),
-    legend.text = element_text(size = 8))
-
-ggarrange(accuracy_plot, competence_plot, common.legend = TRUE)
+```{r child = "appendix_exp4.Rmd"}
 ```
 
-## Categorical choice context
+\clearpage
 
-```{r read-simulation-data-categorical, message=FALSE}
-# read data from simulations
-simulation_sample_categorical <- read_csv("Experiment_4/data/sim_rel_majority_vary_competence_sample_3_options.csv")
-
-simulation_options_categorical <- read_csv("Experiment_4/data/sim_rel_majority_vary_competence_options_3_sample.csv")
+```{r child = "appendix_exp5.Rmd"}
 ```
 
-When people make a choice based on several categories, their answers cannot be ranked by their nature (i.e. they are nominal, not ordinal), and that there are fewer of them (e.g. one of three possible products to choose, instead of an estimate between one and two thousand). In this case, convergence can be measured by the share of people agreeing on an answer. The larger the share of informants agreeing on an answer, the greater convergence. This measure is at the response level, nested within the group level. 
+\clearpage
 
-As for the numeric scenario, we ran simulations to provide a normative answer as to whether it is justified to infer accuracy and competence from greater convergence. We, again, suppose that an individual's answer is drawn from an internal distribution - in this case, a multinomial distribution, that describes how likely the individual is to choose each available option. If there are m choice options, an individual has the probability p of picking the right one, and the probability of (1-p)/(m-1) to pick any other option. Each individual has their own multinomial distribution. We define competence as the probability of making the correct choice. The higher the competence, the greater the probability that an individual will choose the correct option. Competence values range from being at chance for selecting the correct option (p = 1/m) to certainly selecting the correct option (p = 1). As before in the numeric case, suppose that individual competence levels are drawn from a competence distribution, which can be expressed by a beta distribution (see fig. \@ref(fig:competence-distributions)). Based on their competence level, we draw an estimate for each individual. We measure an individual's accuracy as a binary outcome, namely whether they picked the correct option, or not. We then randomly assign individuals to groups of informants (we vary the sample size from one simulation to another). Within these groups, we calculate the share of individuals voting for an answer option. For example, in a scenario in which three individuals pick among three options (A, B and C), two individuals might vote C and one B. In this case we obtain an average accuracy and an average competence value for a share of 2/3 (option C) and for a share of 1/3 (option B). We simulate this on a population of 999000 individuals. We repeat this procedure varying the underlying population competence distributions, and additionally varying either (a) the sample size of informants, or (b) the number of choice options. If we vary the sample size, we hold the number of choice options constant at n = 3, and vice versa when varying the number of choice options. Fig. \@ref(fig:simulation-accuracy-sample-categorical) shows the average accuracy, and Fig. \@ref(fig:simulation-competence-sample-categorical) the average competence value for each share of votes, for different competence levels and varying the sample size. Fig. \@ref(fig:simulation-accuracy-options-categorical) and Fig. \@ref(fig:simulation-competence-options-categorical) display the same relationship, but varying the number of choice options instead. The figures dispaly that, across all sample sizes and competence levels, the larger the share of votes for an option, the more accurate the option is on average. That relationship appears to follow some sigmoid curve which switches from an average accuracy of 0 to an average accuracy of 1 before a share of 0.5 is attained, and which is steeper for larger sample sizes. For competence, we observe a similar sigmoid-like relationship, but of lesser amplitude and varying considerably as a function of the underlying population competence distributions. 
-
-(ref:simulation-accuracy-sample-categorical) Accuracy as a function of vote share for an option, for different population competence distributions and sample sizes. Points represent averages across all simulations within the respective segment. The number of choice options is three.
-
-```{r simulation-accuracy-sample-categorical, fig.cap="(ref:simulation-accuracy-sample-categorical)", out.width="75%"}
-plot_competence_vary_relative_majority_categorical(simulation_sample_categorical,
-                                       outcome = "Accuracy", variable = sample)
+```{r child = "appendix_exp6.Rmd"}
 ```
 
-(ref:simulation-competence-sample-categorical) Competence as a function of vote share for an option, for different population competence distributions and sample sizes. Points represent averages across all simulations within the respective segment. The number of choice options is three.
+\clearpage
 
-```{r simulation-competence-sample-categorical, fig.cap="(ref:simulation-competence-sample-categorical)", out.width="75%"}
-plot_competence_vary_relative_majority_categorical(simulation_sample_categorical,
-                                       outcome = "Competence", variable = sample)
-```
-
-(ref:simulation-accuracy-options-categorical) Accuracy as a function of vote share for an option, for different population competence distributions and number of choice options. Points represent averages across all simulations within the respective segment. The sample size is three.
-
-```{r simulation-accuracy-options-categorical, fig.cap="(ref:simulation-accuracy-options-categorical)", out.width="75%"}
-plot_competence_vary_relative_majority_categorical(simulation_options_categorical,
-                                       outcome = "Accuracy", variable = options)
-```
-
-(ref:simulation-competence-options-categorical) Competence as a function of vote share for an option, for different population competence distributions and number of choice options. Points represent averages across all simulations within the respective segment. The sample size is three.
-
-```{r simulation-competence-options-categorical, fig.cap="(ref:simulation-competence-options-categorical)", out.width="75%"}
-plot_competence_vary_relative_majority_categorical(simulation_options_categorical,
-                                       outcome = "Competence", variable = options)
-```
-
-In sum, given the set of specific assumptions we made, our simulations suggest that people are indeed justified in inferring accuracy and competence from convergence in both numeric and categorical choice settings.
-
-(ref:simulation-accuracy-numeric) Simulation results showing the relationship between convergence and accuracy for different population competence distributions. 
-
-```{r simulation-accuracy-numeric-1, fig.cap="(ref:simulation-accuracy-numeric)", out.width="75%"}
-# plot_list <- plot_competence_vary_numeric(data = simulation_numeric, outcome = "accuracy")
-# ggarrange(plotlist = plot_list, common.legend = TRUE, ncol = 1)
-
-plot_competence_vary_numeric(data = simulation_numeric, outcome = "accuracy")[[1]]
-```
-
-```{r simulation-accuracy-numeric-2, fig.cap="(ref:simulation-accuracy-numeric)", out.width="75%"}
-plot_competence_vary_numeric(data = simulation_numeric, outcome = "accuracy")[[2]]
-```
-
-```{r simulation-accuracy-numeric-3, fig.cap="(ref:simulation-accuracy-numeric)", out.width="75%"}
-plot_competence_vary_numeric(data = simulation_numeric, outcome = "accuracy")[[3]]
-```
-
-```{r simulation-accuracy-numeric-4, fig.cap="(ref:simulation-accuracy-numeric)", out.width="75%"}
-plot_competence_vary_numeric(data = simulation_numeric, outcome = "accuracy")[[4]]
-```
-
-```{r simulation-accuracy-numeric-5, fig.cap="(ref:simulation-accuracy-numeric)", out.width="75%"}
-plot_competence_vary_numeric(data = simulation_numeric, outcome = "accuracy")[[5]]
-```
-
-```{r simulation-accuracy-numeric-6, fig.cap="(ref:simulation-accuracy-numeric)", out.width="75%"}
-plot_competence_vary_numeric(data = simulation_numeric, outcome = "accuracy")[[6]]
-```
-
-(ref:simulation-competence-numeric) Simulation results showing the relationship between convergence and competence for different population competence distributions. 
-
-```{r simulation-competence-numeric-1, fig.cap="(ref:simulation-competence-numeric)", out.width="75%"}
-# plot_list <- plot_competence_vary_numeric(data = simulation_numeric, outcome = "accuracy")
-# ggarrange(plotlist = plot_list, common.legend = TRUE, ncol = 1)
-plot_competence_vary_numeric(data = simulation_numeric, outcome = "competence")[[1]]
-```
-
-```{r simulation-competence-numeric-2, fig.cap="(ref:simulation-competence-numeric)", out.width="75%"}
-plot_competence_vary_numeric(data = simulation_numeric, outcome = "competence")[[2]]
-```
-
-```{r simulation-competence-numeric-3, fig.cap="(ref:simulation-competence-numeric)", out.width="75%"}
-plot_competence_vary_numeric(data = simulation_numeric, outcome = "competence")[[3]]
-```
-
-```{r simulation-competence-numeric-4, fig.cap="(ref:simulation-competence-numeric)", out.width="75%"}
-plot_competence_vary_numeric(data = simulation_numeric, outcome = "competence")[[4]]
-```
-
-```{r simulation-competence-numeric-5, fig.cap="(ref:simulation-competence-numeric)", out.width="75%"}
-plot_competence_vary_numeric(data = simulation_numeric, outcome = "competence")[[5]]
-```
-
-```{r simulation-competence-numeric-6, fig.cap="(ref:simulation-competence-numeric)", out.width="75%"}
-plot_competence_vary_numeric(data = simulation_numeric, outcome = "competence")[[6]]
+```{r child = "appendix_simulations.Rmd"}
 ```

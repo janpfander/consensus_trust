@@ -1,0 +1,111 @@
+# Experiment 1 {#exp1}
+
+## Stimuli
+
+\FloatBarrier
+
+The means of the normal distributions that we draw our estimates from were distinct between sets of estimates. Considering our within-participant design, we wanted to ensure that participants understood each set of estimates as being the result of a different, unrelated game. In order to assure that random draws from the distributions will (most likely) appear on the response scale (1000 to 2000), we constrained the means of all normal distributions to lie between the first and third quartile of the response scale (i.e. smallest possible mean was 1225 and largest 1775). We define a set of eight means--one for each set of estimates--that cover the range from first to third quartile of the predefined scale with an equal interval (1250, 1325, 1400, 1475, 1550, 1625, 1700, 1775). We randomly paired means with conditions when generating the stimuli. We then drew the set of estimates from the respective normal distributions given the assigned means and the condition constraints. We repeated this three times, resulting in three different series of eight sets of estimates. We randomly assign participants to one of these series. Additionally, for each participant, we randomize the order of appearance of the sets of estimates within the respective series. Images of all sets of estimates can be found on the OSF.
+
+## Attention check
+
+Imagine you are playing video games with a friend and at some point your friend says: “I don’t want to play this game anymore! To make sure that you read the instructions, please write the three following words "I pay attention" in the box below. I really dislike this game, it's the most overrated game ever.”
+
+Do you agree with your friend? (Yes/No)
+
+## Results
+
+Figure \@ref(fig:exp1-plot) visualizes the results and table \@ref(tab:exp1-table) contains descriptive results.
+
+```{r exp1-table}
+exp1 %>% 
+  group_by(convergence, number) %>% 
+  summarise(across(c(competence, confidence), list(mean = mean, sd = sd))) %>% 
+  rounded_numbers() %>% 
+  mutate(Accuracy = paste0(confidence_mean, " (sd = ", confidence_sd, ")"),
+         Competence = paste0(competence_mean, " (sd = ", competence_sd, ")")
+         ) %>% 
+  rename(Convergence = convergence,
+         Number = number) %>% 
+  select(Convergence, Number, Accuracy, Competence) %>% 
+  apa_table()
+```
+
+(ref:exp1-plot) Distributions of accuracy and competence by level of convergence.
+
+```{r exp1-plot, fig.cap="(ref:exp1-plot)"}
+# make mean data for plot
+x_nudge <- 0.8
+
+means <- exp1 %>%
+  group_by(convergence) %>%
+  summarize(confidence = mean(confidence), 
+            competence = mean(competence)) %>% 
+  pivot_longer(c(confidence, competence), 
+               names_to = "outcome", 
+               values_to = "value") %>% 
+  mutate(x_position = ifelse(convergence == "convergent", value + x_nudge, 
+                                value - x_nudge)) 
+
+confidence_plot <- ggplot(data=exp1, aes(x=confidence, fill=convergence)) +
+  # density plot
+  geom_density(adjust=3, alpha=.6) +
+  # mean lines
+  geom_vline(data=means %>% 
+               filter(outcome == "confidence"), 
+             aes(xintercept = value, 
+                 color = convergence),
+             show.legend = FALSE,
+             linetype="dashed") +
+  geom_label(data = means %>% 
+               filter(outcome == "confidence"), 
+             aes(x = x_position, y = 0.3, 
+                 label =  paste("mean", round(value, digits = 2),
+                                sep = " = ")), 
+             alpha = 0.6, show.legend = FALSE, size = 3
+            ) +
+  # scales
+  scale_x_continuous(name = "Accuracy (confidence) ratings", breaks = seq(1, 7), 
+                     limits=c(1, 7)) +
+  scale_y_continuous(name = "Density", limits=c(0, 0.3)) +
+  scale_fill_viridis_d(option = "plasma") +
+  scale_color_viridis_d(option = "plasma") + 
+  guides(fill = guide_legend(title = NULL)) +
+  plot_theme 
+
+competence_plot <- ggplot(data=exp1, aes(x=competence, fill=convergence)) +
+  # density plot
+  geom_density(adjust=3, alpha=.6) +
+  # mean lines
+  geom_vline(data=means %>% 
+               filter(outcome == "competence"), 
+             aes(xintercept = value, 
+                 color = convergence),
+             show.legend = FALSE,
+             linetype="dashed") +
+  geom_label(data = means %>% 
+               filter(outcome == "competence"), 
+             aes(x = x_position, y = 0.3, 
+                 label =  paste("mean", round(value, digits = 2),
+                                sep = " = ")), 
+             alpha = 0.6, show.legend = FALSE, size = 3
+            ) +
+  # scales
+  scale_x_continuous(name = "Competence ratings", breaks = seq(1, 7), 
+                     limits=c(1, 7)) +
+  scale_y_continuous(name = "Density", limits=c(0, 0.3)) +
+  scale_fill_viridis_d(option = "plasma") +
+  scale_color_viridis_d(option = "plasma") + 
+  guides(fill = guide_legend(title = NULL)) +
+  plot_theme 
+
+figure <- ggarrange(confidence_plot, 
+                    competence_plot + 
+                      theme(axis.text.y = element_blank(),
+                            axis.ticks.y = element_blank(),
+                            axis.title.y = element_blank()), 
+                    common.legend = T) +
+  theme(legend.position="top") 
+figure
+```
+
+

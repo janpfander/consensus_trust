@@ -891,7 +891,7 @@ plot_competence_distributions <- function(data) {
 ```{r}
 # Tryout beta functions
 # ggplot() +
-#   geom_function(fun = ~dbeta(.x, shape1 = 0.9, shape2 = 0.9))
+#   geom_function(fun = ~dbeta(.x, shape1 = 0.1, shape2 = 10))
 ```
 
 ### Experiment 4
@@ -1219,8 +1219,94 @@ plot_competence_vary_relative_majority(vary_competence_options,
                                        outcome = "Competence", variable = options)
 ```
 
+### Explanation Hugo
+
+We take a very incompetent population
+
+```{r}
+# Tryout beta functions
+ggplot() +
+  geom_function(fun = ~dbeta(.x, shape1 = 0.1, shape2 = 5))
+```
+
+We assume many many choice options (approximating a numeric scenario). We look at a very large sample to (hopefully), sample a couple of really competent individuals. 
+
+```{r}
+# test output (set return to data above)
+# test <- simulate_single_population(population = 10000, sample = 10000, options = 10000,
+#                                    return = "by degree of majority", distribution = "beta",
+#                                    alpha = 0.1, beta = 3) %>% arrange(sample_id) %>%
+#   arrange(sample_id)
+# 
+# test %>% group_by(relative_majority) %>% summarise(across(c(average_relative_competence,
+#                                                         average_accuracy),
+#                                                       mean)
+#                                                )
+```
 
 
+## next
+
+```{r}
+# read data for various sample sizes and 3 choice options
+test <- read_csv("data/sim_rel_majority_vary_competence_sample_3_options.csv")
+```
+
+```{r}
+z <- test %>% 
+  # filter to scenario with samples of 3
+  filter(sample == 3) %>% 
+  group_by(competence, relative_majority) %>% 
+  summarize(
+    mean_competence = mean(average_relative_competence),
+    mean_accuracy = mean(average_accuracy),
+    absolute_count = n()
+    ) %>% 
+  group_by(competence) %>% 
+  mutate(relative_share = absolute_count / sum(absolute_count),
+         bla = sum(absolute_count), 
+         relative_majority = round(relative_majority, digits = 2)
+         )
+
+
+ggplot(z, aes(x = as.factor(relative_majority), y = relative_share, fill = competence)) + 
+  geom_col(position = "dodge", width = 0.7, color = "white") +
+  labs(title = "Grouped Bar Graph",
+       x = "Relative Majority",
+       y = "Relative Share") +
+  scale_fill_viridis_d(option = "rocket") +
+  theme_minimal()
+
+z_step2 <- z %>% 
+  filter(relative_majority == 0.67)
+
+ggplot(z_step2, aes(x = as.factor(relative_majority), y = relative_share, fill = competence)) + 
+  geom_col(position = "dodge", width = 0.7, color = "white") +
+  labs(title = "Grouped Bar Graph",
+       x = "Relative Majority",
+       y = "Relative Share") +
+  scale_fill_viridis_d(option = "rocket") +
+  theme_minimal()
+
+z_step3 <- z_step2 %>% 
+         filter(competence == "very incompetent\n(alpha = 0.1, beta = 1)")
+
+ggplot(z_step3, 
+       aes(x = as.factor(relative_majority), y = mean_competence, fill = competence)) + 
+  geom_col(position = "dodge", width = 0.7, color = "white") +
+  geom_text(aes(label = round(mean_competence, 3)),
+            position = position_dodge(width = 0.7),
+            vjust = -0.5,    # Adjust vertical position of labels
+            size = 3.5,      # Adjust text size
+            color = "black") +
+  labs(title = "Competence for most likely distribution",
+       x = "Relative Majority",
+       y = "Average competence") +
+  scale_fill_viridis_d(option = "rocket") +
+  theme_minimal()
+
+View(z)
+```
 
 
 

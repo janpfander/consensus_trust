@@ -25,6 +25,23 @@ text_ready <- function(model_output) {
   return(result)
 }
 
+# clean data frame results for paired t-test
+clean_t_test <- function(t.test) {
+  
+  t.test %>% 
+    tidy() %>% 
+    select(-c(method, alternative)) %>% 
+    # report p.value according to apa standards
+    mutate(p.value = case_when(p.value < 0.001 ~ "< .001",
+                               TRUE ~ sprintf("p = %.3f", p.value)
+    )
+    ) %>% 
+    # all other terms
+    rounded_numbers() %>%
+    mutate_all(~ {attributes(.) <- NULL; .})
+  
+}
+
 # Plot results from simulation
 
 # Plot competence distributions
@@ -35,33 +52,37 @@ plot_competence_distributions <- function(data) {
     reframe(alpha = unique(alpha), beta = unique(beta))
   
   # Function to plot the different competence distributions 
-  plot_competence_distribution <- function(alpha, beta) {
+  plot_competence_distribution <- function(alpha, beta, competence) {
     ggplot() +
       geom_function(
         fun = ~dbeta(.x, shape1 = alpha, shape2 = beta)
       ) +
-      labs(title = paste0("alpha = ", alpha, ", beta = ", beta), 
+      labs(title = paste0(competence,"\n", "alpha = ", alpha, ", beta = ", beta), 
            y = "Density", x = "Competence") +
-      plot_theme
+      plot_theme +
+      rremove("ylab") +  # Remove y-axis label
+      rremove("xlab")   # Remove x-axis label
   }
   
   # Specify the values of alpha and beta from the data
   alpha_values <- d$alpha
   beta_values <- d$beta 
+  competence_values <- d$competence
   
   # Create a list of ggplot objects
-  plot_list <- map2(alpha_values, beta_values, plot_competence_distribution)
+  plot_list <- pmap(list(alpha = alpha_values, beta = beta_values, competence = competence_values),
+                    plot_competence_distribution)
   
   # Arrange and display the plots
-  competence_plot <- ggarrange(plotlist = plot_list) %>%
-    ggpubr::annotate_figure(top = ggpubr::text_grob("Competence distributions", 
-                                                    face = "bold",
-                                                    color = "darkgrey",
-                                                    size = 14))
+  competence_plot <- ggarrange(plotlist = plot_list) %>% 
+    annotate_figure(figure,
+                    left = textGrob("Density", rot = 90, vjust = 1, gp = gpar(cex = 1)),
+                    bottom = textGrob("Competence", gp = gpar(cex = 1)))
   
   
   return(competence_plot) 
 }
+
 
 # Categorical scenario
 
@@ -307,6 +328,45 @@ plot_competence_vary_numeric <- function(data, ...) {
   }
   
   return(plot_list)
+}
+
+
+# old functions that might still be useful at some point
+
+# Plot competence distributions
+OLD_plot_competence_distributions <- function(data) {
+  # Your data frame
+  d <- data %>% 
+    group_by(competence) %>% 
+    reframe(alpha = unique(alpha), beta = unique(beta))
+  
+  # Function to plot the different competence distributions 
+  plot_competence_distribution <- function(alpha, beta) {
+    ggplot() +
+      geom_function(
+        fun = ~dbeta(.x, shape1 = alpha, shape2 = beta)
+      ) +
+      labs(title = paste0("alpha = ", alpha, ", beta = ", beta), 
+           y = "Density", x = "Competence") +
+      plot_theme
+  }
+  
+  # Specify the values of alpha and beta from the data
+  alpha_values <- d$alpha
+  beta_values <- d$beta 
+  
+  # Create a list of ggplot objects
+  plot_list <- map2(alpha_values, beta_values, plot_competence_distribution)
+  
+  # Arrange and display the plots
+  competence_plot <- ggarrange(plotlist = plot_list) %>%
+    ggpubr::annotate_figure(top = ggpubr::text_grob("Competence distributions", 
+                                                    face = "bold",
+                                                    color = "darkgrey",
+                                                    size = 14))
+  
+  
+  return(competence_plot) 
 }
 
 
