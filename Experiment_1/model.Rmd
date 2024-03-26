@@ -160,7 +160,7 @@ We let this distance be negative, such that higher values represent higher accur
 ```{r}
 # 3: measure accuracy
 data <- data %>% 
-  mutate(accuracy = -1 * (mean - answer)^2)
+  mutate(accuracy = -1 * sd(answer))
 
 ggplot(data, aes(x = accuracy)) +
   geom_histogram() +
@@ -725,94 +725,6 @@ plot_competence_vary_relative_majority <- function(data, variable = options, out
 ```
 
 ## Simulation
-
-### Experiment 4
-
-#### Generate Data
-
-```{r, message=FALSE}
-n <- c(3, 10, 20, 50)
-
-# run simulation and store results in .csv files
-vary_sample(population = 999,
-            min_range = 1000, max_range = 2000,
-            competence_ratio = 1000,
-            iterations = 100,
-            file_name = "sim_experiment_1.csv",
-            n = n, 
-            alpha = 1, 
-            beta = 1, 
-            format = ".csv")
-
-# read simulated data from .csv files
-data <- read_csv("data/sim_experiment_1.csv")
-```
-
-### Plot
-
-```{r}
-# plot results
-plot_results_vary(data, outcome = "accuracy")
-plot_results_vary(data, outcome = "competence")
-```
-
-### Analyze & Compare to participant data
-
-It's not clear to me yet what we would want to compare.
-
-In the experiment, we generated guesses from two different distribution widths: one with SD = 20 and another with SD = 150. In the model, this corresponds to the competence. However, we did not measure the observed SD of the guesses (which is the measure of convergence I rely on in the models).
-
-Below, what I did was predict accuracy and competence for convergence levels of 20 and 150 based on a regression run on the model data. We could compare that to the participant data - but it's not quite the same thing..
-
-```{r, echo=FALSE}
-# possible analysis
-regression_data <- data %>% 
-  filter(sample %in% c(3, 10)) %>% 
-  mutate(
-    # makes sample a factor
-    sample = as.factor(sample),
-    # Scale accuracy to reach from 1 to 7 
-    # a) scale the variable to range between 0 and 1
-    scaled_accuracy_mean = (accuracy_mean - min(accuracy_mean)) / 
-      (max(accuracy_mean) - min(accuracy_mean)),
-    # b) scale to reach from 1 to 7
-    accuracy_mean = 6*scaled_accuracy_mean + 1,
-    # scale competence to reach from 1 to 7 (instead of 0 to 1)
-    competence_mean = 6*competence_mean + 1
-  ) 
-  
-accuracy <- lm(accuracy_mean ~ convergence + sample + convergence*sample, 
-               data = regression_data) 
-competence <- lm(competence_mean ~ convergence + sample + convergence*sample, 
-               data = regression_data) 
-
-summary(competence)
-
-# Create a new data frame with values for prediction
-values_to_predict <- data.frame(convergence = c(-20, -150), 
-                                sample = rep(c("3", "10"), each = 2))
-
-# Predict values using the fitted model
-predictions <- bind_cols(values_to_predict,
-                         predict(accuracy, newdata = values_to_predict) %>% 
-                           tidy() %>% 
-                           pivot_longer(x, 
-                                       names_to = "bla", 
-                                       values_to = "predicted_accuracy") %>% 
-                           select(predicted_accuracy),
-                         predict(competence, newdata = values_to_predict) %>% 
-                           tidy() %>% 
-                           pivot_longer(x, 
-                                       names_to = "bla", 
-                                       values_to = "predicted_competence") %>% 
-                           select(predicted_competence)
-                         )
-
-predictions
-
-```
-
-## Vary competence
 
 ```{r, message=FALSE}
 n <- c(3, 5, 10, 20, 50, 100)

@@ -72,6 +72,23 @@ d <- d %>%
          )
 ```
 
+## Recode demographics
+
+```{r, message=FALSE}
+prolific_demographics <- read_csv("./data/prolific_demographics.csv")
+
+d <- left_join(d, prolific_demographics, by = c("PROLIFIC_PID" = "Participant id"))
+```
+
+
+```{r}
+d <- d %>% 
+  mutate(gender = case_when(Sex == "Male" ~ "male", 
+                            Sex == "Female" ~  "female", 
+                            .default = NA)
+         )
+```
+
 ## Export data
 
 ```{r}

@@ -133,6 +133,19 @@ d <- d %>%
     )
 ```
 
+## Rename demographics
+
+```{r}
+d <- d %>% 
+  rename(education = Q5, 
+         age = Q4,
+         gender = Q3) %>% 
+  mutate(gender = case_when(gender == 1 ~ "male", 
+                            gender == 2 ~  "female", 
+                            .default = NA)
+         )
+```
+
 ## Export data
 
 ```{r}

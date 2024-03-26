@@ -404,7 +404,7 @@ table(d$attention)</code></pre>
 ##                        1                        1                       11 
 ##          I pay attention         I pay attention.               in the box 
 ##                      285                        1                        1</code></pre>
-<p>There is one clearly failed attention check that we remove.</p>
+<p>There are two clearly failed attention check that we remove.</p>
 <pre class="r"><code># filter to only valid attention check responses
 d &lt;- d %&gt;% filter(str_detect(attention, &quot;attention&quot;))</code></pre>
 </div>
@@ -436,6 +436,17 @@ d &lt;- d %&gt;%
          accuracy = acc) %&gt;% 
   # all variables are coded as `character` - make key variables numeric
   mutate(across(c(convergence, competence, accuracy), as.numeric)
+         )</code></pre>
+</div>
+<div id="recode-demographics" class="section level2">
+<h2>Recode demographics</h2>
+<pre class="r"><code>prolific_demographics &lt;- read_csv(&quot;./data/prolific_demographics.csv&quot;)
+
+d &lt;- left_join(d, prolific_demographics, by = c(&quot;PROLIFIC_PID&quot; = &quot;Participant id&quot;))</code></pre>
+<pre class="r"><code>d &lt;- d %&gt;% 
+  mutate(gender = case_when(Sex == &quot;Male&quot; ~ &quot;male&quot;, 
+                            Sex == &quot;Female&quot; ~  &quot;female&quot;, 
+                            .default = NA)
          )</code></pre>
 </div>
 <div id="export-data" class="section level2">

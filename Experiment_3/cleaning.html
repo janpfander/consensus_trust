@@ -357,8 +357,9 @@ display: none;
 </div>
 
 
-<pre class="r"><code>library(tidyverse)     # create plots with ggplot, manipulate data, etc.
-library(broom.mixed)   # convert regression models into nice tables
+<pre class="r"><code>library(tidyverse)     # create plots with ggplot, manipulate data, etc.</code></pre>
+<pre><code>## Warning: package &#39;stringr&#39; was built under R version 4.2.3</code></pre>
+<pre class="r"><code>library(broom.mixed)   # convert regression models into nice tables
 library(modelsummary)  # combine multiple regression models into a single table
 library(lme4)          # model specification / estimation 
 library(lmerTest)      # provides p-values in the output
@@ -479,6 +480,17 @@ compared to <em>conflict of interest</em>).</p>
     independence = ifelse(independence == &quot;indep&quot;, &quot;independent&quot;, &quot;conflict&quot;),
     independence = as.factor(independence),
     independence = fct_relevel(independence, &quot;conflict&quot;, &quot;independent&quot;)
+         )</code></pre>
+</div>
+<div id="rename-demographics" class="section level2">
+<h2>Rename demographics</h2>
+<pre class="r"><code>d &lt;- d %&gt;% 
+  rename(education = Q5, 
+         age = Q4,
+         gender = Q3) %&gt;% 
+  mutate(gender = case_when(gender == 1 ~ &quot;male&quot;, 
+                            gender == 2 ~  &quot;female&quot;, 
+                            .default = NA)
          )</code></pre>
 </div>
 <div id="export-data" class="section level2">

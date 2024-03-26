@@ -54,6 +54,25 @@ There is one clearly failed attention check that we remove.
 ## Re-shape data
 
 
+## Recode demographics
+
+
+```r
+prolific_demographics <- read_csv("./data/prolific_demographics.csv")
+
+d <- left_join(d, prolific_demographics, by = c("PROLIFIC_PID" = "Participant id"))
+```
+
+
+
+```r
+d <- d %>% 
+  mutate(gender = case_when(Sex == "Male" ~ "male", 
+                            Sex == "Female" ~  "female", 
+                            .default = NA)
+         )
+```
+
 ## Export data
 
 

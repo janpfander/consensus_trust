@@ -8,7 +8,7 @@ text_ready <- function(model_output) {
     filter(effect == "fixed") %>% 
     # report p.value according to apa standards
     mutate(p.value = case_when(p.value < 0.001 ~ "< .001",
-                               TRUE ~ sprintf("p = %.3f", p.value)
+                               TRUE ~ sprintf("%.3f", p.value)
     )
     ) %>% 
     # all other terms
@@ -59,6 +59,7 @@ plot_competence_distributions <- function(data) {
       ) +
       labs(title = paste0(competence,"\n", "alpha = ", alpha, ", beta = ", beta), 
            y = "Density", x = "Competence") +
+      scale_x_continuous(breaks = scales::pretty_breaks()) +
       plot_theme +
       rremove("ylab") +  # Remove y-axis label
       rremove("xlab")   # Remove x-axis label
@@ -81,6 +82,21 @@ plot_competence_distributions <- function(data) {
   
   
   return(competence_plot) 
+}
+
+# Function for splitting data along several variables (useful for inline reporting)
+# taken from here: https://www.tjmahr.com/lists-knitr-secret-weapon/
+super_split <- function(.data, ...) {
+  dots <- rlang::enquos(...)
+  for (var in seq_along(dots)) {
+    var_name <- rlang::as_name(dots[[var]])
+    .data <- purrr::map_depth(
+      .x = .data,
+      .depth = var - 1,
+      .f = function(xs) split(xs, xs[var_name])
+    )
+  }
+  .data
 }
 
 
@@ -191,6 +207,84 @@ plot_competence_vary_categorical <- function(data, variable = options, outcome =
   }
 } 
 
+# function used in participant vs. model comparisons
+plot_results <- function(data, outcome = "everything") {
+  
+  d <- data
+  
+  # make constellation a factor with the right levels
+  d$constellation <- fct_relevel(d$constellation, "minority(ies)", "dissensus", "majority", "consensus")
+  
+  # extract simulation info
+  simulation_info <- d %>% summarize(across(c(population, sample, options, total_iterations), mean)) 
+  
+  caption = paste0("Number of choice options: ", simulation_info$options,
+                   "; Sample size: ", simulation_info$sample,
+                   "; Iterations : ", simulation_info$total_iterations, 
+                   "; Population size per iteration: ", simulation_info$population)
+  
+  # make descriptive data
+  # descriptive <- d %>% 
+  #   group_by(constellation) %>% 
+  #   summarise(count = sum(count)) %>% 
+  #   mutate(rel_freq = round(count / sum(count), digits = 2)) %>% 
+  #   gridExtra::tableGrob(rows = NULL)
+  
+  
+  # plot for accuracy
+  plot_accuracy <- ggplot(d,
+                          aes(x = constellation, y = average_accuracy, fill = constellation)) +
+    geom_half_violin(position = position_nudge(x = -.2),
+                     adjust=2, alpha = .8,
+                     side = "l") +
+    stat_summary(fun = "mean", geom = "point", size = 1, shape = 21) +
+    stat_summary(fun = "mean", geom = "line", size = 1, linetype = "dashed") +
+    stat_summary(fun.data = "mean_se", geom = "errorbar", width = .2) +
+    # Add nice labels
+    labs(x = "Convergence", y = "Accuracy") +
+    scale_fill_viridis_d(option = "plasma", begin = 0.1) +
+    guides(fill = FALSE) +
+    plot_theme + 
+    theme(axis.text.x = element_text(angle = 20, hjust = 1)) +
+    ylim(c(0, 1))
+  
+  # plot for competence
+  plot_competence <- ggplot(d,
+                            aes(x = constellation, y =  average_relative_competence, fill = constellation)) +
+    geom_half_violin(position = position_nudge(x = -.2),
+                     adjust=2, alpha = .8,
+                     side = "l") +
+    stat_summary(fun = "mean", geom = "point", size = 1, shape = 21) +
+    stat_summary(fun = "mean", geom = "line", size = 1, linetype = "dashed") +
+    stat_summary(fun.data = "mean_se", geom = "errorbar", width = .2) +
+    # Add nice labels
+    labs(x = "Convergence", y = "Competence", caption = caption) +
+    scale_fill_viridis_d(option = "plasma", begin = 0.1) +
+    guides(fill = FALSE) +
+    plot_theme + 
+    theme(axis.text.x = element_text(angle = 20, hjust = 1)) +
+    ylim(c(0, 1))
+  
+  # unite tables
+  # tables <- gridExtra::grid.arrange(descriptive, simulation_info, ncol = 2)
+  
+  if (outcome == "everything") {
+    
+    return(plot_accuracy | plot_competence )
+  }
+  
+  if (outcome == "accuracy") {
+    
+    return(plot_accuracy + labs(caption = caption))
+  }
+  
+  if (outcome == "competence") {
+    
+    return(plot_competence)
+  }
+  
+}
+
 # main plot by size of relative majority
 plot_competence_vary_relative_majority_categorical <- function(data, variable = options, outcome = "Accuracy") {
   
@@ -208,7 +302,7 @@ plot_competence_vary_relative_majority_categorical <- function(data, variable = 
   if (variable_name == "sample") {
     caption = paste0("Number of choice options: ", d$options[1],
                      "; Iterations per sample size: ", d$total_iterations[1], 
-                     "; Population size per iteration: ", d$population[1])
+                     "; Population size per iteration: ", names(table(d$population))[1], "/", names(table(d$population))[2])
   }
   
   d <- d %>% 
@@ -236,9 +330,9 @@ plot_competence_vary_relative_majority_categorical <- function(data, variable = 
     geom_point() +
     geom_line() +
     # Add nice labels
-    labs(x = "Relative majority \n (share of informants agreeing on an option)", 
+    labs(x = "Convergence \n (share of votes for an option)", 
          y = outcome, caption = caption, 
-         color = variable_name) +
+         color = paste0("n ", variable_name)) +
     scale_color_viridis_d(option = "plasma", begin = 0.1, 
                           #limits = rev(levels(d$constellation)),
                           direction = -1
@@ -330,6 +424,113 @@ plot_competence_vary_numeric <- function(data, ...) {
   return(plot_list)
 }
 
+# plot continuous simulations for cogsci paper
+plot_continuous_cogsci <- function(data, outcome = "accuracy") {
+  
+  d <- data
+  
+  # extract simulation info
+  caption = paste0("Iterations per sample size: ", d$total_iterations[1], 
+                   "; Population size per iteration: ", d$population[1])
+  
+  
+  if(outcome == "accuracy") {
+    
+    d$outcome <- d$accuracy_mean
+    
+    outcome_label <- "Accuracy"
+  }
+  
+  if (outcome == "competence") {
+    
+    d$outcome <- d$competence_mean
+    
+    outcome_label <- "Competence"
+  }  
+  
+  plot <- ggplot(d, aes(x = convergence, y = outcome, color = as.factor(sample))) +
+    #geom_smooth(method = "lm", se = FALSE) +
+    stat_smooth(geom='line', method = "lm", alpha=0.7, se=FALSE) +
+    # Add nice labels
+    labs(x = "Convergence \n(SDs of samples)", 
+         y = outcome_label,
+         caption = caption, 
+         color = "n sample") +
+    scale_color_viridis_d(option = "plasma", begin = 0.1, 
+                          #limits = rev(levels(d$constellation)),
+                          direction = -1
+    ) +
+    facet_wrap(~competence) +
+    plot_theme + 
+    theme(legend.position = "top", 
+          legend.key.width = unit(1.5, "cm"), 
+          legend.key.height = unit(0.3, "cm"))
+
+  return(plot)
+}
+
+# combined plot for all simulation scenarios
+
+plot_continuous_combined <- function(data, outcome = "accuracy") {
+  
+  d <- data %>% 
+    mutate(sample = factor(sample, levels = sample, labels = paste0("N groups = ", sample)))
+  
+  # Maybe later:
+  # make a relative variable for the fill aesthetics 
+  # (the default mode for geom_hex is to count N, but this differs so much across simulations that legend is not meaningful)
+  # rel_frequency_in_cell <- data %>% 
+  #   group_by(competence, sample, accuracy, ) %>% 
+  #   summarise(n = n(), 
+  #             rel.)
+  
+  
+  # extract simulation info
+  caption = paste0("Iterations per sample size: ", d$total_iterations[1], 
+                   "; Population size per iteration: ", d$population[1])
+  
+  
+  plot_accuracy <- ggplot(d, aes(x = convergence, y = accuracy_mean)) +
+    geom_hex(alpha = 0.9) +
+    #geom_smooth(method = "lm", se = FALSE) +
+    stat_smooth(geom='line', method = "lm", alpha=0.7, se=FALSE, color = "darkgrey") +
+    # Add nice labels
+    labs(x = "Convergence \n(SDs of samples)", 
+         y = "Accuracy \n(squared distance to true mean)",
+         caption = caption) +
+    scale_fill_viridis_c(option = "plasma", begin = 0.1) +
+    facet_grid(sample ~ competence) +
+    plot_theme + 
+    theme(legend.position = "top", 
+          legend.key.width = unit(1.5, "cm"), 
+          legend.key.height = unit(0.3, "cm"))
+  
+  plot_competence <- ggplot(d, aes(x = convergence, y = competence_mean)) +
+    geom_hex(alpha = 0.9) +
+    #geom_smooth(method = "lm", se = FALSE) +
+    stat_smooth(geom='line', method = "lm", alpha=0.7, se=FALSE, color = "darkgrey") +
+    # Add nice labels
+    labs(x = "Convergence \n(SDs of samples)", 
+         y = "Competence \n(SD for data generating function)",
+         caption = caption) +
+    scale_fill_viridis_c(option = "plasma", begin = 0.1) +
+    facet_grid(sample ~ competence) +
+    plot_theme + 
+    theme(legend.position = "top", 
+          legend.key.width = unit(1.5, "cm"), 
+          legend.key.height = unit(0.3, "cm"))
+  
+  if (outcome == "accuracy") {
+    
+    return(plot_accuracy)
+  }
+  
+  if (outcome == "competence") {
+    
+    return(plot_competence)
+  }
+}
+
 
 # old functions that might still be useful at some point
 
@@ -368,6 +569,8 @@ OLD_plot_competence_distributions <- function(data) {
   
   return(competence_plot) 
 }
+
+
 
 
 

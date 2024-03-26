@@ -43,7 +43,7 @@ levels(d$attention)
 table(d$attention)
 ```
 
-There is one clearly failed attention check that we remove. 
+There are two clearly failed attention check that we remove. 
 
 ```{r}
 # filter to only valid attention check responses
@@ -78,6 +78,23 @@ d <- d %>%
          accuracy = acc) %>% 
   # all variables are coded as `character` - make key variables numeric
   mutate(across(c(convergence, competence, accuracy), as.numeric)
+         )
+```
+
+## Recode demographics
+
+```{r, message=FALSE}
+prolific_demographics <- read_csv("./data/prolific_demographics.csv")
+
+d <- left_join(d, prolific_demographics, by = c("PROLIFIC_PID" = "Participant id"))
+```
+
+
+```{r}
+d <- d %>% 
+  mutate(gender = case_when(Sex == "Male" ~ "male", 
+                            Sex == "Female" ~  "female", 
+                            .default = NA)
          )
 ```
 

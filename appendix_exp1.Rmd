@@ -6,6 +6,11 @@
 
 The means of the normal distributions that we draw our estimates from were distinct between sets of estimates. Considering our within-participant design, we wanted to ensure that participants understood each set of estimates as being the result of a different, unrelated game. In order to assure that random draws from the distributions will (most likely) appear on the response scale (1000 to 2000), we constrained the means of all normal distributions to lie between the first and third quartile of the response scale (i.e. smallest possible mean was 1225 and largest 1775). We define a set of eight means--one for each set of estimates--that cover the range from first to third quartile of the predefined scale with an equal interval (1250, 1325, 1400, 1475, 1550, 1625, 1700, 1775). We randomly paired means with conditions when generating the stimuli. We then drew the set of estimates from the respective normal distributions given the assigned means and the condition constraints. We repeated this three times, resulting in three different series of eight sets of estimates. We randomly assign participants to one of these series. Additionally, for each participant, we randomize the order of appearance of the sets of estimates within the respective series. Images of all sets of estimates can be found on the OSF.
 
+```{r simuli, include=FALSE, out.width= "40%", fig.align="center", fig.show="hold"}
+# knitr::include_graphics("figures/example_stimulus_exp1_convergent.png")
+# knitr::include_graphics("figures/example_stimulus_exp1_divergent.png")
+```
+
 ## Attention check
 
 Imagine you are playing video games with a friend and at some point your friend says: “I don’t want to play this game anymore! To make sure that you read the instructions, please write the three following words "I pay attention" in the box below. I really dislike this game, it's the most overrated game ever.”
@@ -14,7 +19,7 @@ Do you agree with your friend? (Yes/No)
 
 ## Results
 
-Figure \@ref(fig:exp1-plot) visualizes the results and table \@ref(tab:exp1-table) contains descriptive results.
+Figure \@ref(fig:exp1-plot) visualizes the results and table \@ref(tab:exp1-table) contains descriptive results. Figure \@ref(fig:exp1-outcomes) visualizes score differences between the two outcomes, accuracy and competence. 
 
 ```{r exp1-table}
 exp1 %>% 
@@ -108,4 +113,119 @@ figure <- ggarrange(confidence_plot,
 figure
 ```
 
+## Research questions
+
+We had three additional research questions regarding the number of informants:
+
+***RQ1: Do H1 and H2 hold for both a small [3] and a large [10] number of estimates?***
+
+***RQ2: When making a guess based on the opinions of (independent) informants, will participants be more confident about their guess when there is a larger number of estimates compared to when this number is smaller?***
+
+***RQ3: Is there an interaction effect between the number of estimates and convergence on perceived competence of informants?***
+
+Regarding RQ1, we ran the same mixed models as for the two hypotheses, but without number as a covariate. Instead, we ran separate models for the three and the ten informants conditions. We find that for both sub-samples, there is a positive effect of convergence on both accuracy ($\hat{b}_{\text{three informants}}$ = `r exp1_research_questions$model_small_accuracy$convergenceconvergent$estimate` `r exp1_research_questions$model_small_accuracy$convergenceconvergent$ci`, p = `r exp1_research_questions$model_small_accuracy$convergenceconvergent$p.value`; $\hat{b}_{\text{ten informants}}$ = `r exp1_research_questions$model_large_accuracy$convergenceconvergent$estimate` `r exp1_research_questions$model_large_accuracy$convergenceconvergent$ci`, p = `r exp1_research_questions$model_large_accuracy$convergenceconvergent$p.value`) and competence ($\hat{b}_{\text{three informants}}$ = `r exp1_research_questions$model_small_competence$convergenceconvergent$estimate` `r exp1_research_questions$model_small_competence$convergenceconvergent$ci`, p = `r exp1_research_questions$model_small_competence$convergenceconvergent$p.value`; $\hat{b}_{\text{ten informants}}$ = `r exp1_research_questions$model_large_competence$convergenceconvergent$estimate` `r exp1_research_questions$model_large_competence$convergenceconvergent$ci`, p = `r exp1_research_questions$model_large_competence$convergenceconvergent$p.value`). 
+
+To test the other two research questions, we ran the same mixed-models as for the hypotheses, but this time including an interaction between number of informants and convergence. We use deviation-coded versions of our convergent variable (divergent = -0.5, convergent = 0.5), allowing us to have a coefficient measuring the main effect of the number of informants in our model. Regarding RQ2, pooling across convergent and divergent conditions, we find a main effect of number, such that participants had more confidence in their estimate when they relied on ten informants compared to three informants ($\hat{b}_{\text{Accuracy}}$ = `r exp1_research_questions$model_interaction_accuracy$number_effect_code$estimate` `r exp1_research_questions$model_interaction_accuracy$number_effect_code$ci`, p = `r exp1_research_questions$model_interaction_accuracy$number_effect_code$p.value`). Regarding RQ3, we find an interaction between number of informants and convergence on competence: the positive effect of convergence was stronger in scenarios involving ten informants compared to three informants ($\hat{b}_{\text{Competence}}$ = `r exp1_research_questions$model_interaction_competence$interaction$estimate` `r exp1_research_questions$model_interaction_competence$interaction$ci`, p = `r exp1_research_questions$model_interaction_competence$interaction$p.value`). We do not find a statistically significant interaction on accuracy ($\hat{b}_{\text{Accuracy}}$ = `r exp1_research_questions$model_interaction_accuracy$interaction$estimate` `r exp1_research_questions$model_interaction_accuracy$interaction$ci`, p = `r exp1_research_questions$model_interaction_accuracy$interaction$p.value`).
+
+(ref:exp1-outcomes) Differences between accuracy and competence ratings, by level of convergence.
+
+```{r exp1-outcomes, fig.cap="(ref:exp1-outcomes)"}
+# Differences in outcome between accuracy and competence
+exp1_long <- exp1 %>%
+  pivot_longer(cols = c(confidence, competence), 
+               names_to = "outcome", 
+               values_to = "score")
+
+interaction_plot <- ggplot(exp1_long, aes(x = outcome, y = score, 
+                                         fill = convergence, 
+                                         shape = convergence, 
+                                         group = convergence, 
+                                         color = convergence)) +
+  scale_x_discrete(limits = c("confidence", "competence"), 
+                   labels = c("Accuracy", "Competence")) +
+  geom_half_violin(data = exp1_long %>% filter(outcome == "confidence"), 
+                   position = position_nudge(x = -.2), adjust = 2, alpha = .4,
+                   side = "l") +
+  geom_half_violin(data = exp1_long %>% filter(outcome == "competence"),
+                   position = position_nudge(x = .2), adjust = 2, alpha = .4,
+                   side = "r") +
+  xlab("Outcome") +
+  ylab("Score") +
+  scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7)) +
+  stat_summary(fun = "mean", geom = "point", size = 3) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(fun.data = "mean_se", geom = "errorbar", width = .2) +
+  scale_fill_manual(name = NULL,
+                    labels = c("divergent", "convergent"),
+                    values = c("#E69F00", "#56B4E9")) +
+  scale_color_manual(name = NULL,
+                     labels = c("divergent", "convergent"),
+                     values = c("#E69F00", "#56B4E9")) +
+  guides(shape = "none",
+         fill = guide_legend(title = NULL)) +
+  plot_theme +
+  # change font sizes
+  theme(axis.text = element_text(size = 10)) +
+  theme(axis.title = element_text(size = 15)) +
+  theme(legend.text = element_text(size = 10))
+
+print(interaction_plot)
+```
+
+```{r, include = FALSE}
+# manual version for points / confidence intervals for the above plot
+
+# exp1_long <- exp1 %>%
+#   pivot_longer(cols = c(confidence, competence), 
+#                names_to = "outcome", 
+#                values_to = "score")
+# 
+# # Calculate mean and standard error
+# mean_se <- exp1_long %>%
+#   group_by(outcome, convergence) %>%
+#   summarize(mean_score = mean(score), 
+#             se_score = sd(score) / sqrt(n())) %>% 
+#   mutate(ci_low = mean_score - se_score, 
+#          ci_high = mean_score + se_score)
+# 
+# interaction_plot <- ggplot(exp1_long, aes(x = outcome, y = score, 
+#                                          fill = convergence, 
+#                                          shape = convergence, 
+#                                          group = convergence, 
+#                                          color = convergence)) +
+#   scale_x_discrete(limits = c("confidence", "competence"), 
+#                    labels = c("Accuracy", "Competence")) +
+#   geom_half_violin(data = exp1_long %>% filter(outcome == "confidence"), 
+#                    position = position_nudge(x = -.2), adjust = 2, alpha = .4,
+#                    side = "l") +
+#   geom_half_violin(data = exp1_long %>% filter(outcome == "competence"),
+#                    position = position_nudge(x = .2), adjust = 2, alpha = .4,
+#                    side = "r") +
+#   xlab("Outcome") +
+#   ylab("Score") +
+#   scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7)) +
+#   geom_point(data = mean_se, aes(x = outcome, y = mean_score), size = 3) +
+#   geom_line(data = mean_se, aes(x = outcome, y = mean_score)) +
+#   geom_errorbar(data = mean_se,
+#                 aes(x = outcome,
+#                     y = mean_score,
+#                     ymin = mean_score - se_score,
+#                     ymax = mean_score + se_score),
+#                 width = 0.2) +
+#   scale_fill_manual(name = NULL,
+#                     labels = c("divergent", "convergent"),
+#                     values = c("#E69F00", "#56B4E9")) +
+#   scale_color_manual(name = NULL,
+#                      labels = c("divergent", "convergent"),
+#                      values = c("#E69F00", "#56B4E9")) +
+#   guides(shape = "none",
+#          fill = guide_legend(title = NULL)) +
+#   plot_theme +
+#   # change font sizes
+#   theme(axis.text = element_text(size = 10)) +
+#   theme(axis.title = element_text(size = 15)) +
+#   theme(legend.text = element_text(size = 10))
+# 
+# print(interaction_plot)
+```
 

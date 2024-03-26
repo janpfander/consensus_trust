@@ -391,6 +391,17 @@ library(kableExtra)    # for tables</code></pre>
 <div id="re-shape-data" class="section level2">
 <h2>Re-shape data</h2>
 </div>
+<div id="recode-demographics" class="section level2">
+<h2>Recode demographics</h2>
+<pre class="r"><code>prolific_demographics &lt;- read_csv(&quot;./data/prolific_demographics.csv&quot;)
+
+d &lt;- left_join(d, prolific_demographics, by = c(&quot;PROLIFIC_PID&quot; = &quot;Participant id&quot;))</code></pre>
+<pre class="r"><code>d &lt;- d %&gt;% 
+  mutate(gender = case_when(Sex == &quot;Male&quot; ~ &quot;male&quot;, 
+                            Sex == &quot;Female&quot; ~  &quot;female&quot;, 
+                            .default = NA)
+         )</code></pre>
+</div>
 <div id="export-data" class="section level2">
 <h2>Export data</h2>
 <pre class="r"><code>write_csv(d, &quot;data/cleaned.csv&quot;)</code></pre>

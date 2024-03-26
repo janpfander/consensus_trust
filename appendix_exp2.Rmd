@@ -14,8 +14,8 @@ data.frame(
     "Players are asked to make completely independent decisions – they cannot see each other’s estimates, or talk with each other before giving their estimates.",
     "Players are asked to talk with each other about the game at length before giving their estimates."
   )
-) #%>% 
-  # apa_table(align = c("m{3cm}", "m{12cm}")) 
+) %>% 
+  apa_table(align = c("m{3cm}", "m{12cm}")) 
 ```
 
 ## Attention check

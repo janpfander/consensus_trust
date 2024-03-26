@@ -894,13 +894,15 @@ plot_competence_distributions <- function(data) {
 #   geom_function(fun = ~dbeta(.x, shape1 = 0.1, shape2 = 10))
 ```
 
+We first simulate data to compare to our experiments. We then do more general simulations.
+
 ### Experiment 4
 
 #### Generate Data
 
 First, we want to simulate data under assumptions that correspond to our experimental design.
 
-For the first, simulation, we fix all parameters. We assume:
+^We assume:
 - a uniform competence distribution (beta = 1 and alpha = 1)
 - 3 choice options,
 - samples of 3 (i.e. 3 informants)
@@ -933,133 +935,6 @@ sim_experiment_4 %>% group_by(constellation) %>% summarise(across(c(average_accu
 plot_results(sim_experiment_4)
 ```
 
-#### Analyze data
-
-```{r, echo=FALSE}
-# possible analysis
-regression_data <- sim_experiment_4 %>%
-  mutate(
-    # make numeric version of convergence
-    convergence = case_when( 
-      constellation == "minority" ~ 0, 
-      constellation == "dissensus" ~ 1,
-      constellation == "majority" ~ 2,
-      constellation == "consensus" ~ 3), 
-    # scale accuracy to reach from 0 to 100 (instead from 0 to 1)
-    average_accuracy = average_accuracy*100,
-    # scale competence to reach from 1 to 7 (instead of 0 to 1)
-    average_relative_competence = 6*average_relative_competence + 1 
-  ) 
-  
-accuracy_model <- lm(average_accuracy ~ convergence, 
-                     data = regression_data)
-competence_model <- lm(average_relative_competence ~ convergence, 
-                       data = regression_data)
-```
-
-#### Compare participants and simulations
-
-```{r, message=FALSE}
-# read data from experiments
-d <- read_csv("./data/cleaned.csv")
-
-# make a categorical variable from `convergence`
-d <- d %>% 
-  mutate(convergence_categorical = recode_factor(convergence, 
-                                                 `0` = "opposing majority", 
-                                                 `1` = "divergence", 
-                                                 `2` = "majority", 
-                                                 `3` = "consensus",
-                                                 .default = NA_character_)
-         )
-```
-
-##### Table
-
-```{r, echo=FALSE}
-# Calculate models for participants
-
-# model for accuracy
-# random intercept and slope by participants
-accuracy_participants <- lmer(accuracy ~ convergence + (1 + convergence | id), 
-                                 data = d)
-# model for competence
-# random intercept and slope by participants
-competence_participants <- lmer(competence ~ convergence + 
-                           (1 + convergence | id), data = d)
-
-# main result table
-modelsummary::modelsummary(list("Accuracy" = accuracy_participants, 
-                                "Competence" = competence_participants,
-                                "Accuracy" = accuracy_model, 
-                                "Competence" = competence_model
-                                ),
-                           title = 'Participants vs. Model', 
-                           stars = TRUE) %>%
-  kableExtra::add_header_above(c(" " = 1, "Participants" = 2, "Model" = 2))
-```
-
-##### Plots
-
-```{r, echo=FALSE}
-# Participant data
-
-# plot for accuracy
-plot_accuracy <- ggplot(d,
-       aes(x = convergence_categorical, y = accuracy, fill = convergence_categorical)) +
-  geom_half_violin(position = position_nudge(x = -.2),
-                   adjust=2, alpha = .8,
-                   side = "l") +
-  stat_summary(fun = "mean", geom = "point", size = 1, shape = 21) +
-  stat_summary(fun = "mean", geom = "line", size = 1, linetype = "dashed") +
-  stat_summary(fun.data = "mean_se", geom = "errorbar", width = .2) +
-  # Add nice labels
-  labs(x = "Convergence", y = "Accuracy") +
-  scale_fill_viridis_d(option = "plasma", begin = 0.1) +
-  guides(fill = FALSE) +
-  plot_theme + 
-  theme(axis.text.x = element_text(angle = 20, hjust = 1))
-
-# plot for competence
-plot_competence <- ggplot(d,
-       aes(x = convergence_categorical, y = competence, fill = convergence_categorical)) +
-  geom_half_violin(position = position_nudge(x = -.2),
-                   adjust=2, alpha = .8,
-                   side = "l") +
-  stat_summary(fun = "mean", geom = "point", size = 1, shape = 21) +
-  stat_summary(fun = "mean", geom = "line", size = 1, linetype = "dashed") +
-  stat_summary(fun.data = "mean_se", geom = "errorbar", width = .2) +
-  # Add nice labels
-  labs(x = "Convergence", y = "Competence") +
-  scale_fill_viridis_d(option = "plasma", begin = 0.1) +
-  guides(fill = FALSE) +
-  plot_theme + 
-  theme(axis.text.x = element_text(angle = 20, hjust = 1))
-```
-
-```{r}
-# Model data
-plot_accuracy_model <- plot_results(sim_experiment_4, outcome = "accuracy")
-plot_competence_model <- plot_results(sim_experiment_4, outcome = "competence")
-```
-
-```{r, echo=FALSE}
-# Combine participant and model
-# accuracy
-plot_accuracy <- plot_accuracy + ggtitle("Participants")
-plot_accuracy_model <- plot_accuracy_model + ggtitle("Model")
-
-plot_accuracy + plot_accuracy_model
-```
-
-```{r, echo=FALSE}
-# competence
-plot_competence <- plot_competence + ggtitle("Participants")
-plot_competence_model <- plot_competence_model + ggtitle("Model")
-
-plot_competence + plot_competence_model
-```
-
 ### Experiment 6
 
 #### Generate data
@@ -1089,37 +964,7 @@ data_3_options <- read_csv("data/sim_vary_options_3_sample.csv")
 plot_results_vary(data_3_options, 
                   variable = options)
 ```
-
-#### Analyze data
-
-```{r, echo=FALSE}
-# possible analysis for varying choice options (3 vs. 10)
-regression_data <- data_3_options %>%
-  filter(options %in% c(3, 10)) %>%
-  # group_by(iteration, constellation, options) %>%
-  # summarise(across(c(average_accuracy, average_relative_competence), mean)) %>%
-  mutate(
-    convergence = case_when(
-      constellation == "minority" ~ 0,
-      constellation == "dissensus" ~ 1,
-      constellation == "majority" ~ 2,
-      constellation == "consensus" ~ 3),
-    options = as.factor(options),
-    # scale accuracy to reach from 0 to 100 (instead from 0 to 1)
-    average_accuracy = average_accuracy*100,
-    # scale competence to reach from 1 to 7 (instead of 0 to 1)
-    average_relative_competence = 6*average_relative_competence + 1
-  )
-
-accuracy <- lm(average_accuracy ~ convergence + options + convergence*options,
-               data = regression_data)
-competence <- lm(average_relative_competence ~ convergence + options + convergence*options, 
-                 data = regression_data)
-
-summary(competence)
-```
-
-### Vary competence
+## Vary competence
 
 Finally, we want to vary the underlying competence distribution. Along with it, we vary either sample size or number of choice options (holding the respective other constant). 
 
@@ -1180,6 +1025,7 @@ plot_competence_distributions(vary_competence_sample)
 plot_competence_vary_relative_majority(vary_competence_sample,
                                        outcome = "Accuracy", variable = sample)
 ```
+
 ```{r}
 plot_competence_vary_relative_majority(vary_competence_sample,
                                        outcome = "Competence", variable = sample)
@@ -1217,95 +1063,6 @@ plot_competence_vary_relative_majority(vary_competence_options,
 ```{r}
 plot_competence_vary_relative_majority(vary_competence_options,
                                        outcome = "Competence", variable = options)
-```
-
-### Explanation Hugo
-
-We take a very incompetent population
-
-```{r}
-# Tryout beta functions
-ggplot() +
-  geom_function(fun = ~dbeta(.x, shape1 = 0.1, shape2 = 5))
-```
-
-We assume many many choice options (approximating a numeric scenario). We look at a very large sample to (hopefully), sample a couple of really competent individuals. 
-
-```{r}
-# test output (set return to data above)
-# test <- simulate_single_population(population = 10000, sample = 10000, options = 10000,
-#                                    return = "by degree of majority", distribution = "beta",
-#                                    alpha = 0.1, beta = 3) %>% arrange(sample_id) %>%
-#   arrange(sample_id)
-# 
-# test %>% group_by(relative_majority) %>% summarise(across(c(average_relative_competence,
-#                                                         average_accuracy),
-#                                                       mean)
-#                                                )
-```
-
-
-## next
-
-```{r}
-# read data for various sample sizes and 3 choice options
-test <- read_csv("data/sim_rel_majority_vary_competence_sample_3_options.csv")
-```
-
-```{r}
-z <- test %>% 
-  # filter to scenario with samples of 3
-  filter(sample == 3) %>% 
-  group_by(competence, relative_majority) %>% 
-  summarize(
-    mean_competence = mean(average_relative_competence),
-    mean_accuracy = mean(average_accuracy),
-    absolute_count = n()
-    ) %>% 
-  group_by(competence) %>% 
-  mutate(relative_share = absolute_count / sum(absolute_count),
-         bla = sum(absolute_count), 
-         relative_majority = round(relative_majority, digits = 2)
-         )
-
-
-ggplot(z, aes(x = as.factor(relative_majority), y = relative_share, fill = competence)) + 
-  geom_col(position = "dodge", width = 0.7, color = "white") +
-  labs(title = "Grouped Bar Graph",
-       x = "Relative Majority",
-       y = "Relative Share") +
-  scale_fill_viridis_d(option = "rocket") +
-  theme_minimal()
-
-z_step2 <- z %>% 
-  filter(relative_majority == 0.67)
-
-ggplot(z_step2, aes(x = as.factor(relative_majority), y = relative_share, fill = competence)) + 
-  geom_col(position = "dodge", width = 0.7, color = "white") +
-  labs(title = "Grouped Bar Graph",
-       x = "Relative Majority",
-       y = "Relative Share") +
-  scale_fill_viridis_d(option = "rocket") +
-  theme_minimal()
-
-z_step3 <- z_step2 %>% 
-         filter(competence == "very incompetent\n(alpha = 0.1, beta = 1)")
-
-ggplot(z_step3, 
-       aes(x = as.factor(relative_majority), y = mean_competence, fill = competence)) + 
-  geom_col(position = "dodge", width = 0.7, color = "white") +
-  geom_text(aes(label = round(mean_competence, 3)),
-            position = position_dodge(width = 0.7),
-            vjust = -0.5,    # Adjust vertical position of labels
-            size = 3.5,      # Adjust text size
-            color = "black") +
-  labs(title = "Competence for most likely distribution",
-       x = "Relative Majority",
-       y = "Average competence") +
-  scale_fill_viridis_d(option = "rocket") +
-  theme_minimal()
-
-View(z)
 ```
 
 

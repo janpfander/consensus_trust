@@ -10,6 +10,13 @@ output:
 
 ```r
 library(tidyverse)     # create plots with ggplot, manipulate data, etc.
+```
+
+```
+## Warning: package 'stringr' was built under R version 4.2.3
+```
+
+```r
 library(broom.mixed)   # convert regression models into nice tables
 library(modelsummary)  # combine multiple regression models into a single table
 library(lme4)          # model specification / estimation 
@@ -178,6 +185,20 @@ d <- d %>%
     independence = ifelse(independence == "indep", "independent", "conflict"),
     independence = as.factor(independence),
     independence = fct_relevel(independence, "conflict", "independent")
+         )
+```
+
+## Rename demographics
+
+
+```r
+d <- d %>% 
+  rename(education = Q5, 
+         age = Q4,
+         gender = Q3) %>% 
+  mutate(gender = case_when(gender == 1 ~ "male", 
+                            gender == 2 ~  "female", 
+                            .default = NA)
          )
 ```
 
