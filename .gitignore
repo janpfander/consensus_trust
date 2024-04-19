@@ -12,7 +12,7 @@
 *.docx
 *.tex
 *.log
-
+*.html
 # remove other specific files
 how_to*
 understanding*

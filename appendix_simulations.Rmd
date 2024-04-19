@@ -1,6 +1,6 @@
 # Simulations {#simulations}
 
-Are we justified in inferring competence and accuracy from convergence? To provide a normative answer, we ran simulations, intended to mirror our experimental setup. We find that - under certain conditions - more convergent groups indeed tend to be more competent and accurate. In this appendix, we describe these simulations in detail.
+Are we justified in inferring competence and accuracy from convergence? To complement our analytical argument, we ran simulations, intended to mirror our experimental setup. We find that--under certain conditions--more convergent groups indeed tend to be more competent and accurate. In this appendix, we describe these simulations in detail.
 
 ## Numerical choice context
 
