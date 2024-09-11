@@ -9,12 +9,15 @@
 *output
 **/*_files/
 **/sim*
+**/sensitivity*
 *.docx
-*.tex
 *.log
 *.html
+
+# remove folders
+no_git/*
+revisions/*
+
 # remove other specific files
-how_to*
-understanding*
 author_info*
-*letter*
+*analysis*

@@ -33,7 +33,7 @@ Do you agree with your friend? (Yes/No)
 ```{r stimuli-10, echo=FALSE}
 # Create a matrix of image file paths as Markdown-formatted strings
 image_paths <- data.frame(
-  condition = c("opposing majority (0)", "dissensus (1)", "majority (2)", "consensus (10)"),
+  condition = c("minority (0)", "dissensus (1)", "majority (2)", "consensus (3)"),
   imgage_a = c(
     "![](Experiment_6/figures/stimuli/minority_10_a.png){ width=40% }",
     "![](Experiment_6/figures/stimuli/divergence_10_a.png){ width=40% }",
@@ -65,7 +65,7 @@ kableExtra::kable(image_paths, format = "markdown",
 ```{r stimuli-10-alt, echo=FALSE}
 # Create a matrix of image file paths as Markdown-formatted strings
 image_paths <- data.frame(
-  condition = c("opposing majority (0)", "dissensus (1)", "majority (2)", "consensus (10)"),
+  condition = c("minority (0)", "dissensus (1)", "majority (2)", "consensus (3)"),
   imgage_a = c(
     "![](Experiment_6/figures/stimuli/minority_10_a_alt.png){ width=40% }",
     "![](Experiment_6/figures/stimuli/divergence_10_a_alt.png){ width=40% }",

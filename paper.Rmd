@@ -611,7 +611,7 @@ We manipulated two factors: informational dependency (two levels, independence a
 
 ### Materials
 
-The distributions presented were similar to those of Experiment 1, although generated in a slightly different manner (see ESM, section \@ref(exp3)). Each participant rated four scenarios, two for each level of convergence. By contrast to experiment one, all scenarios only involved groups of three informants.
+The distributions presented were similar to those of Experiment 1, although generated in a slightly different manner (see ESM, section \@ref(exp3)). Each participant rated four scenarios, two for each level of convergence. By contrast to Experiment 1, all scenarios only involved groups of three informants.
 
 ## Results and discussion
 
