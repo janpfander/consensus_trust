@@ -248,44 +248,7 @@ ggplot(mss,
 
 
 
-# Let's find the minimum detectable effect
-power_levels <- c()
-effects_to_try <- c(0.1, 0.2, 0.4, 0.6, 0.8, 1, 1.2)
 
-for (i in 1:length(effects_to_try)) {
-  
-  # keep track of progress
-  print(paste("effect to try: ", effects_to_try[i]))
-  
-  # iterate
-  power_levels[i] <- iterate(
-    n_subj = 200,
-    n_low  =  4,   # number of low convergence stimuli
-    n_high =  4,   # number of high convergence stimuli
-    beta_0     = 4.13,   # grand mean
-    beta_1     =  effects_to_try[i],   # effect of convergence
-    tau_0      = 0.64,   # by-subject random intercept sd
-    tau_1      =  0.99,   # by-subject random slope sd
-    rho        = 0.11,   # correlation between intercept and slope by-subject
-    sigma      = 0.955,  # residual (standard deviation)
-    iterations = 1000)
-}
-
-# Where do we cross 90%?
-power_results <- tibble(effect = effects_to_try,
-                        power = power_levels)
-power_results
-
-# plot results
-ggplot(power_results, 
-       aes(x = effect, y = power)) +
-  geom_line(color = 'red', size = 1.5) + 
-  # add a horizontal line at 90%
-  geom_hline(aes(yintercept = .9), linetype = 'dashed') + 
-  # Prettify!
-  theme_minimal() + 
-  scale_y_continuous(labels = scales::percent) + 
-  labs(x = 'Mixed model effect size of convergence', y = 'Power')
 
 
 

@@ -55,7 +55,7 @@ exp4 %>%
   apa_table()
 ```
 
-(ref:exp4-plot) Distributions of accuracy and competence by level of convergence.
+(ref:exp4-plot) Results of Experiment 4, showing the distributions of accuracy and competence by level of convergence.
 
 ```{r exp4-plot, fig.cap="(ref:exp4-plot)"}
 # plot for accuracy

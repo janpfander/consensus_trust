@@ -229,3 +229,299 @@ print(interaction_plot)
 # print(interaction_plot)
 ```
 
+## Minor deviation from preregistration
+
+```{r}
+# T-test
+t_test_accuracy <- t.test(confidence ~ convergence, data = exp1, paired = TRUE) %>% clean_t_test()
+t_test_competence <- t.test(competence ~ convergence, data = exp1, paired = TRUE) %>% clean_t_test()
+```
+
+In our preregistration, we stated we would run paired t-tests and only conduct mixed models as a robustness check. However, it became clear to us later that mixed models are more appropriate in light of our data structure. In the main article, we therefore only report the results of the mixed models. Note, however, that using paired t-tests, we confirm our results (Accuracy: `r t_test_accuracy$estimate`, t-statistic = `r t_test_accuracy$statistic`, p `r t_test_accuracy$p.value`; Competence: `r t_test_competence$estimate`, t-statistic = `r t_test_competence$statistic`, p `r t_test_competence$p.value`)
+
+## Sensitivity simulation
+
+We had based our power calculations on a paired t-test (using the widely used tool G*Power), which does not correspond to the mixed-models we eventually ran. To address this point, here, we seek to identify the minimum effect size that our analysis with mixed models could have detected, given a 90% power, an N of 200 participants, and other parameters derived from the estimates observed in the sample of Experiment 1 (see \@ref(tab:exp1-regression-table)). By contrast to a standard power simulation (which varies sample size), a sensitivity simulation varies the effect size, while holding the sample size and desired power constant.
+
+```{r exp1-regression-table}
+modelsummary::modelsummary(list("Accuracy" = exp1_model_accuracy, 
+                                "Competence" = exp1_model_competence), 
+                           title = "Model Results Experiment 1")
+```
+
+```{r}
+# Sensitivity analysis Experiment 1
+
+library(tidyverse)
+library(purrr)
+library(broom)
+library(lmerTest)
+
+set.seed(1000)
+
+# Generate data
+create_data <- function(n_subj, n_div, n_conv, beta_0, beta_1, 
+                        tau_0, tau_1, rho, sigma) { 
+  
+  items <- data.frame(
+    item_id = seq_len(n_div + n_conv),
+    convergence = rep(c("div", "conv"), c(n_div, n_conv)),
+    # make the same as a numeric variable to generate competence
+    convergence_num = rep(c(-0.5, 0.5), c(n_div, n_conv)))
+  
+  # variance-covariance matrix
+  cov_mx  <- matrix(
+    c(tau_0^2,             rho * tau_0 * tau_1,
+      rho * tau_0 * tau_1, tau_1^2            ),
+    nrow = 2, byrow = TRUE)
+  
+  subjects <- data.frame(subj_id = seq_len(n_subj),
+                         MASS::mvrnorm(n = n_subj,
+                                       mu = c(T_0s = 0, T_1s = 0),
+                                       Sigma = cov_mx))
+  
+  crossing(subjects, items)  %>%
+    mutate(
+           # turn convergence into factor variable
+           # for later analysis. Make sure the levels correspond to the 
+           # numeric variables we generate competence with
+           convergence = as.factor(convergence),
+           convergence = fct_relevel(convergence, "div", "conv"),
+           # residual error
+           e_si = rnorm(nrow(.), mean = 0, sd = sigma),
+           # generate competence
+           competence = beta_0 + T_0s + (beta_1 + T_1s) * convergence_num + e_si) %>%
+    select(subj_id, item_id, convergence, competence, convergence_num)
+}
+
+# test
+# data <- create_data(
+#   n_subj = 100,
+#   n_div  =  2,   # number of low convergence stimuli
+#   n_conv =  2,   # number of high convergence stimuli
+#   beta_0 = 4,
+#   beta_1 = 0.5,  # effect of convergence
+#   tau_0      = 0.7,   # by-subject random intercept sd
+#   tau_1      =  0.9,   # by-subject random slope sd
+#   rho        = 0.1,   # correlation between intercept and slope by-subject
+#   sigma      = 0.99) # residual (standard deviation)
+
+
+# Our estimation function
+est_model <- function(n_subj, n_div, n_conv, beta_0, beta_1,
+                      tau_0, tau_1, rho, sigma) {
+  
+  data_sim <- create_data(n_subj, n_div, n_conv, beta_0, beta_1,
+                          tau_0, tau_1, rho, sigma)
+  model_sim <- lmer(competence ~ convergence + (1 + convergence | subj_id),
+                    data_sim)
+  
+  tidied <- broom.mixed::tidy(model_sim)
+  sig <- tidied$p.value[2] < .05
+  
+  return(sig)
+}
+
+# test
+# model_result <- est_model(
+#   n_subj = 100,
+#   n_div  =  2,   # number of low convergence stimuli
+#   n_conv =  2,   # number of high convergence stimuli
+#   beta_0 = 4,    # intercept (average of divergent condition)
+#   beta_1 = 0.5,  # effect of convergence
+#   tau_0      = 0.7,   # by-subject random intercept sd
+#   tau_1      =  0.9,   # by-subject random slope sd
+#   rho        = 0.1,   # correlation between intercept and slope by-subject
+#   sigma      = 0.99) # residual (standard deviation)
+
+
+# Iteration function
+iterate <- function(n_subj, n_div, n_conv, beta_0, beta_1,
+                    tau_0, tau_1, rho, sigma, iterations) 
+{ # number of iterations
+  
+  results <-  1:iterations %>%
+    map_dbl(function(x) {
+      # To keep track of progress
+      if (x %% 100 == 0) {print(paste("iteration number ", x))}
+      
+      # Run our model and return the result
+      return(est_model(n_subj, n_div, n_conv, beta_0, beta_1,
+                       tau_0, tau_1, rho, sigma))
+    })
+  
+  # We want to know statistical power, 
+  # i.e., the proportion of significant results
+  return(mean(results))
+}
+
+# test
+# power <- iterate(
+#   n_subj = 100,
+#   n_div  =  2,   # number of low convergence stimuli
+#   n_conv =  2,   # number of high convergence stimuli
+#   beta_0 = 4, 
+#   beta_1 = 0.5,  
+#   tau_0      = 0.7,   # by-subject random intercept sd
+#   tau_1      =  1,   # by-subject random slope sd
+#   rho        = 0.1,   # correlation between intercept and slope by-subject
+#   sigma      = 1,  # residual (standard deviation)
+#   iterations = 500)
+
+sensitivity_analysis <- function(file_name, effect_sizes, ...) {
+  
+  # only run analysis if a file with that name does not yet exists
+  if (!file.exists(paste0("Experiment_1/data/", file_name))) {
+    
+    # do the `iterate()` function for each effect size and store the results
+    # in a common data frame
+    power <- purrr::map_df(effect_sizes, 
+              function(beta_1){
+                # this is essentially a for loop - 
+                # do the following for each 
+                # element of effect_sizes
+                
+                # To keep track of progress
+                print(paste("tested effect size = ", beta_1))
+                
+                # run power calculation
+                power <- iterate(beta_1 = beta_1, ...) 
+                                  
+                
+                # make data frame
+                result <- tibble(effect_size = beta_1, 
+                                 power = power)
+                
+                return(result)
+                
+              })
+    
+    # write out file
+    write_csv(power, paste0("Experiment_1/data/", file_name))
+  }
+}
+
+# test (note that this requires building the parameter lists below before)
+# effect_sizes <- c(1, 1.2)
+# test <- purrr::map_df(effect_sizes, 
+#               function(beta_1){
+#                 # this is essentially a for loop - 
+#                 # do the following for each 
+#                 # element of effect_sizes
+#                 
+#                 # To keep track of progress
+#                 print(paste("tested effect size = ", beta_1))
+#                 
+#                 # run power calculation
+#                 power <- do.call(iterate, c(parameters_accuracy, 
+#                                              beta_1 = beta_1))
+#                 
+#                 # make data frame
+#                 result <- tibble(effect_size = beta_1, 
+#                                  power = power)
+#                 
+#                 return(result)
+#                 
+#               })
+```
+
+```{r}
+# Define parameters
+
+# Extract parameters from model estimates of Experiment 1
+estimates_accuracy <- exp1_model_accuracy %>% 
+  tidy() %>% 
+  split(.$term)
+
+estimates_competence <- exp1_model_competence %>% 
+  tidy() %>% 
+  split(.$term)
+
+# Set parameter lists
+parameters_accuracy <- list(
+  n_subj = 200,
+  n_div  =  2,   # number of low convergence stimuli
+  n_conv =  2,   # number of high convergence stimuli
+  beta_0 = estimates_accuracy$'(Intercept)'$estimate, # intercept (mean of divergent)
+  #beta_1 = estimates_accuracy$convergenceconvergent$estimate, # mean difference convergence vs divergence
+  tau_0      = estimates_accuracy$'sd__(Intercept)'$estimate,   # by-subject random intercept sd
+  tau_1      =  estimates_accuracy$sd__convergenceconvergent$estimate,   # by-subject random slope sd
+  rho        = estimates_accuracy$'cor__(Intercept).convergenceconvergent'$estimate,   # correlation between intercept and slope by-subject
+  sigma      = estimates_accuracy$sd__Observation$estimate,  # residual (standard deviation)
+  iterations = 1000)
+
+# Set parameter lists
+parameters_competence <- list(
+  n_subj = 200,
+  n_div  =  2,   # number of low convergence stimuli
+  n_conv =  2,   # number of high convergence stimuli
+  beta_0 = estimates_competence$'(Intercept)'$estimate, # intercept (mean of divergent)
+  # beta_1 = estimates_competence$convergenceconvergent$estimate, # mean difference convergence vs divergence
+  tau_0      = estimates_competence$'sd__(Intercept)'$estimate,   # by-subject random intercept sd
+  tau_1      =  estimates_competence$sd__convergenceconvergent$estimate,   # by-subject random slope sd
+  rho        = estimates_competence$'cor__(Intercept).convergenceconvergent'$estimate,   # correlation between intercept and slope by-subject
+  sigma      = estimates_competence$sd__Observation$estimate,  # residual (standard deviation)
+  iterations = 1000)
+```
+
+```{r}
+# Run analysis
+
+# Accuracy
+do.call(sensitivity_analysis, c(parameters_accuracy, 
+                                        list(file_name = "sensitivity_accuracy.csv", 
+                                             effect_sizes = c(0.1, 0.2, 0.4, 0.6, 0.8, 1, estimates_accuracy$convergenceconvergent$estimate)
+                                             )
+                                        )
+                )
+
+sensitivity_accuracy <- read_csv("Experiment_1/data/sensitivity_accuracy.csv")
+
+# Competence
+do.call(sensitivity_analysis, c(parameters_competence, 
+                                        list(file_name = "sensitivity_competence.csv", 
+                                             effect_sizes = c(0.1, 0.2, 0.4, 0.6, 0.8, 1, estimates_competence$convergenceconvergent$estimate)
+                                             )
+                                        )
+                )
+
+sensitivity_competence <- read_csv("Experiment_1/data/sensitivity_competence.csv")
+
+```
+(ref:sensitivity) Results of the sensitivity analysis.
+
+```{r sensitivity, fig.cap="(ref:sensitivity)"}
+# Plot
+
+# combine data
+plot_data <- bind_rows(sensitivity_accuracy %>% 
+                         mutate(outcome = "Accuracy"), 
+                       sensitivity_competence %>% 
+                         mutate(outcome = "Competence"))
+
+# plot results
+plot_power <- function(data) {
+  
+  ggplot(data, 
+       aes(x = effect_size, y = power)) +
+  geom_point(color = "red", size = 1) +
+  geom_line(size = 1, alpha = 0.5) + 
+  # add a horizontal line at 90%, our power_threshold
+  geom_hline(aes(yintercept = .9), linetype = 'dashed') + 
+  # display iterations
+  annotate("text", x = 1, y = 0.25, label = "iterations per \n effect size = 1'000")+
+  # Prettify!
+  theme_minimal() + 
+    scale_colour_viridis_d(option = "plasma") + 
+  scale_y_continuous(labels = scales::percent, breaks = ) + 
+  labs(x = 'Effect size', y = 'Power', 
+       title = "Sensitivity Analysis",
+       subtitle = "(Finding the minimum detectable effect)") +
+    facet_wrap(~outcome)
+}
+
+plot_power(plot_data)
+```
+
+The results of this can be seen in Fig. \@ref(fig:sensitivity). In our sample, we found a statistically significant effect size of `r estimates_accuracy$convergenceconvergent$estimate` for accuracy and an effect size of `r estimates_competence$convergenceconvergent$estimate` for competence (both on their original scales from 1 to 7). The simulations show that, given our parameter assumptions (based on the observations in our sample) and a sample size of N = 200, we would have detected an effect as small as 0.4 with a power of at least 90% (in fact nearly 100%) for both accuracy and competence.
+
