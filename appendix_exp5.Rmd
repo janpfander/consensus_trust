@@ -1,21 +1,20 @@
 # Experiment 5 {#exp5}
 
-## Design
-
 \FloatBarrier
 
-We manipulated convergence within participants in the same way we did in experiment 4. In addition, between participants, we manipulated informational dependence, akin to experiment 3 (Table \@ref(tab:exp5-condition)). In the biased condition, experts were described to gain personally from recommending a certain investment option - but without specifying what that option is. In the independent condition, there was no such conflict of interest and experts were described as independent.
 
 ```{r exp5-condition}
+# We manipulated convergence within participants in the same way we did in experiment 4. In addition, between participants, we manipulated informational dependence, akin to experiment 3 (Table \@ref(tab:exp5-condition)). In the biased condition, experts were described to gain personally from recommending a certain investment option - but without specifying what that option is. In the independent condition, there was no such conflict of interest and experts were described as independent.
+
 # Participants read only one of these introductions before seeing the sets of estimates, depending on which condition they had been assigned to
-data.frame(
-  Condition = c("Independence condition", "Conflict of interest condition"),
-  Description = c(
-    "The three advisors are independent of each other, and have no conflict of interest in making investment recommendations.",
-    "The three advisors have already invested in one of the three options, the same option for all three. As a result, they have an incentive to push that option in their recommendations."
-  )
-) %>% 
-  apa_table(align = c("m{3cm}", "m{12cm}")) 
+# data.frame(
+#   Condition = c("Independence condition", "Conflict of interest condition"),
+#   Description = c(
+#     "The three advisors are independent of each other, and have no conflict of interest in making investment recommendations.",
+#     "The three advisors have already invested in one of the three options, the same option for all three. As a result, they have an incentive to push that option in their recommendations."
+#   )
+# ) %>% 
+#   apa_table(align = c("m{3cm}", "m{12cm}")) 
 ```
 
 ## Attention check
@@ -66,14 +65,24 @@ mutate(independence = ifelse(independence == "conflict of interest", "Conflict o
 
 table <- cbind(exp5_accuracy, exp5_competence)
 
-table %>%
-  kable(booktabs = TRUE, 
-        # need to add a (empty) caption for cross referencing to work
-        caption = "") %>%
-  kable_styling() %>% 
-  add_header_above(c("", "Accuracy" = 2, "Competence" = 2)) %>%
-  # make smaller to fit
-  kable_styling(latex_options = "scale_down") 
+# Create the basic table
+if (knitr::is_latex_output() || knitr::is_html_output()) {
+  # For LaTeX or HTML: Use kable, add_header_above, and kable_styling
+  table_output <- table %>%
+    kable(booktabs = TRUE, 
+          caption = "") %>%  # Empty caption for cross-referencing
+    add_header_above(c("", "Accuracy" = 2, "Competence" = 2)) %>%
+    kable_styling(latex_options = "scale_down")  # Scale down for LaTeX
+} else {
+  # For Word: Use apa_table
+  table_output <- papaja::apa_table(
+    table, 
+    caption = "Participants vs. Model"
+  )
+}
+
+# Print the table
+table_output
 ```
 
 

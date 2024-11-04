@@ -1,21 +1,19 @@
 # Experiment 2 {#exp2}
 
-## Design
-
 \FloatBarrier
 
-We manipulated informational dependency. According to the condition, players read a different introduction before seeing a set of estimates (see Table \@ref(tab:exp2-conditions)).
-
 ```{r exp2-conditions}
+# We manipulated informational dependency. According to the condition, players read a different introduction before seeing a set of estimates (see Table \@ref(tab:exp2-conditions)).
+
 # The different introductions that participants read before seeing the sets of estimates, according to the conditions 
-data.frame(
-  Condition = c("Independence", "Discussion"),
-  Description = c(
-    "Players are asked to make completely independent decisions – they cannot see each other’s estimates, or talk with each other before giving their estimates.",
-    "Players are asked to talk with each other about the game at length before giving their estimates."
-  )
-) %>% 
-  apa_table(align = c("m{3cm}", "m{12cm}")) 
+# data.frame(
+#   Condition = c("Independence", "Discussion"),
+#   Description = c(
+#     "Players are asked to make completely independent decisions – they cannot see each other’s estimates, or talk with each other before giving their estimates.",
+#     "Players are asked to talk with each other about the game at length before giving their estimates."
+#   )
+# ) %>% 
+#   apa_table(align = c("m{3cm}", "m{10cm}")) 
 ```
 
 ## Attention check

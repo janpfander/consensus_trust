@@ -6,7 +6,7 @@
 
 The means of the normal distributions that we draw our estimates from were distinct between sets of estimates. Considering our within-participant design, we wanted to ensure that participants understood each set of estimates as being the result of a different, unrelated game. In order to assure that random draws from the distributions will (most likely) appear on the response scale (1000 to 2000), we constrained the means of all normal distributions to lie between the first and third quartile of the response scale (i.e. smallest possible mean was 1225 and largest 1775). We define a set of eight means--one for each set of estimates--that cover the range from first to third quartile of the predefined scale with an equal interval (1250, 1325, 1400, 1475, 1550, 1625, 1700, 1775). We randomly paired means with conditions when generating the stimuli. We then drew the set of estimates from the respective normal distributions given the assigned means and the condition constraints. We repeated this three times, resulting in three different series of eight sets of estimates. We randomly assign participants to one of these series. Additionally, for each participant, we randomize the order of appearance of the sets of estimates within the respective series. Images of all sets of estimates can be found on the OSF.
 
-```{r simuli, include=FALSE, out.width= "40%", fig.align="center", fig.show="hold"}
+```{r stimuli-exp1, include=FALSE, out.width= "40%", fig.align="center", fig.show="hold"}
 # knitr::include_graphics("figures/example_stimulus_exp1_convergent.png")
 # knitr::include_graphics("figures/example_stimulus_exp1_divergent.png")
 ```
@@ -232,9 +232,16 @@ print(interaction_plot)
 ## Minor deviation from preregistration
 
 ```{r}
-# T-test
-t_test_accuracy <- t.test(confidence ~ convergence, data = exp1, paired = TRUE) %>% clean_t_test()
-t_test_competence <- t.test(competence ~ convergence, data = exp1, paired = TRUE) %>% clean_t_test()
+# Extract the values for each group
+confidence_convergent <- exp1$confidence[exp1$convergence == "convergent"]
+confidence_divergent <- exp1$confidence[exp1$convergence == "divergent"]
+
+competence_convergent <- exp1$competence[exp1$convergence == "convergent"]
+competence_divergent <- exp1$competence[exp1$convergence == "divergent"]
+
+# Perform the paired t-tests
+t_test_accuracy <- t.test(confidence_convergent, confidence_divergent, paired = TRUE) %>% clean_t_test()
+t_test_competence <- t.test(competence_convergent, competence_divergent, paired = TRUE) %>% clean_t_test()
 ```
 
 In our preregistration, we stated we would run paired t-tests and only conduct mixed models as a robustness check. However, it became clear to us later that mixed models are more appropriate in light of our data structure. In the main article, we therefore only report the results of the mixed models. Note, however, that using paired t-tests, we confirm our results (Accuracy: `r t_test_accuracy$estimate`, t-statistic = `r t_test_accuracy$statistic`, p `r t_test_accuracy$p.value`; Competence: `r t_test_competence$estimate`, t-statistic = `r t_test_competence$statistic`, p `r t_test_competence$p.value`)
@@ -246,10 +253,11 @@ We had based our power calculations on a paired t-test (using the widely used to
 ```{r exp1-regression-table}
 modelsummary::modelsummary(list("Accuracy" = exp1_model_accuracy, 
                                 "Competence" = exp1_model_competence), 
-                           title = "Model Results Experiment 1")
+                           title = "Model Results Experiment 1", 
+                           output = "kableExtra")
 ```
 
-```{r}
+```{r run-sensitivity-analysis}
 # Sensitivity analysis Experiment 1
 
 library(tidyverse)
@@ -425,7 +433,7 @@ sensitivity_analysis <- function(file_name, effect_sizes, ...) {
 #               })
 ```
 
-```{r}
+```{r define-parameters}
 # Define parameters
 
 # Extract parameters from model estimates of Experiment 1
@@ -464,7 +472,7 @@ parameters_competence <- list(
   iterations = 1000)
 ```
 
-```{r}
+```{r sensitivity-analysis}
 # Run analysis
 
 # Accuracy

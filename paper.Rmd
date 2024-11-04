@@ -5,15 +5,32 @@ shorttitle        : "How wise is the crowd?"
 header-includes:  | # to prevent floats from moving past certain points (for the appendix)
   \usepackage{placeins} 
   
-affiliation:
-  - id            : " "
-    institution   : " "
+author: 
+  - name          : "Jan Pfänder"
+    affiliation   : "1"
 
+  - name          : "Benoît De Courson"
+    affiliation   : "2"
+
+  - name          : "Hugo Mercier"
+    affiliation   : "1"
+    corresponding : yes    # Define only one corresponding author
+    email         : "hugo.mercier@gmail.com"
+    address: " "
+
+affiliation:
+  - id            : "1"
+    institution   : "Institut Jean Nicod, Département d’études cognitives, ENS, EHESS, PSL University, CNRS, France"
+  - id            : "2"
+    institution   : "Max Planck Institute for the Study of Crime, Security and Law, Freiburg im Breisgau, Germany"
+
+authornote: |
+  We thank the anonymous reviewers for their very valuable feedback. HM received funding from the ANR (SCALUP, ANR-21-CE28-0016-01), and from the John Tempelton Foundation ("An Evolutionary and Cultural Perspective on Intellectual Humility via Intellectual Curiosity and Epistemic Deference"). The ANR also supported this project through FrontCog (ANR-17-EURE-0017), and PSL (ANR-10-IDEX-0001-02).
 
 abstract: |
   Are people who agree on something more likely to be right and competent? Evidence suggests that people tend to make this inference. However, standard wisdom of crowds approaches only provide limited normative grounds. Using simulations and analytical arguments, we argue that when individuals make independent and unbiased estimates, under a wide range of parameters, individuals whose answers converge with each other tend to have more accurate answers and to be more competent. In 6 experiments (UK participants, total N = 1197), we show that participants infer that informants who agree have more accurate answers and are more competent, even when they have no priors, and that these inferences are weakened when the informants were systematically biased. In conclusion, we speculate that  inferences from convergence to accuracy and competence might help explain why people deem scientists competent, even if they have little understanding of science.
   
-keywords          : 
+keywords          : consensus, convergence, majority rules, competence, trust in science
 
 
 
@@ -111,6 +128,8 @@ source("functions/plot_theme.R")
 # load other functions
 source("functions/own_functions.R")
 ```
+
+\newpage
 
 # Introduction
 
@@ -312,8 +331,8 @@ model_large_competence = lmer(competence ~ convergence + (1 + convergence | ID),
                                   data = exp1 %>% filter(number =="large"))
 
 # RQ2 (as separate t-test):
-accuracy <- t.test(confidence ~ number, data = exp1, paired = TRUE)
-competence <- t.test(competence ~ number, data = exp1, paired = TRUE)
+# accuracy <- t.test(confidence ~ number, data = exp1, paired = TRUE) 
+# competence <- t.test(competence ~ number, data = exp1, paired = TRUE)
 
 # RQ2 and RQ3 (as single mixed model):
 
@@ -356,8 +375,8 @@ exp1_research_questions <- list(
                      mean)) %>% 
     rounded_numbers() %>% 
     split(.$number), 
-  accuracy = clean_t_test(accuracy), 
-  competence = clean_t_test(competence),
+  # accuracy = clean_t_test(accuracy), 
+  # competence = clean_t_test(competence),
   # RQ2 and RQ3 in a single mixed model
   model_interaction_competence = text_ready(model_interaction_competence), 
   model_interaction_accuracy = text_ready(model_interaction_accuracy),
@@ -1173,10 +1192,9 @@ The authors declare having no competing interests.
 ```{r child = "appendix_analytical.Rmd"}
 ```
 
-```{=tex}
 \clearpage
 \newpage
-```
+
 ```{r child = "appendix_simulations.Rmd"}
 ```
 

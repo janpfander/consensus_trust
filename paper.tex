@@ -64,14 +64,28 @@
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 % Make \paragraph and \subparagraph free-standing
+\makeatletter
 \ifx\paragraph\undefined\else
   \let\oldparagraph\paragraph
-  \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
 \fi
 \ifx\subparagraph\undefined\else
   \let\oldsubparagraph\subparagraph
-  \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
 \fi
+\makeatother
 % definitions for citeproc citations
 \NewDocumentCommand\citeproctext{}{}
 \NewDocumentCommand\citeproc{mm}{%
@@ -174,10 +188,12 @@
 \makeatletter
 \xapptocmd\appendix
   {\xapptocmd\section
-    {\addcontentsline{toc}{section}{\appendixname\ifoneappendix\else~\theappendix\fi\\: #1}}
+    {\addcontentsline{toc}{section}{\appendixname\ifoneappendix\else~\theappendix\fi: #1}}
     {}{\InnerPatchFailed}%
   }
 {}{\PatchFailed}
+\makeatother
+\keywords{consensus, convergence, majority rules, competence, trust in science}
 \usepackage{csquotes}
 \usepackage{placeins} 
 
@@ -189,18 +205,28 @@
 \urlstyle{same}
 \hypersetup{
   pdftitle={How wise is the crowd: Can we infer people are accurate and competent merely because they agree with each other?},
+  pdfauthor={Jan Pfänder1, Benoît De Courson2, \& Hugo Mercier1},
   pdflang={en-EN},
+  pdfkeywords={consensus, convergence, majority rules, competence, trust in science},
   hidelinks,
   pdfcreator={LaTeX via pandoc}}
 
 \title{How wise is the crowd: Can we infer people are accurate and competent merely because they agree with each other?}
-\author{\phantom{0}}
+\author{Jan Pfänder\textsuperscript{1}, Benoît De Courson\textsuperscript{2}, \& Hugo Mercier\textsuperscript{1}}
 \date{}
 
 
 \shorttitle{How wise is the crowd?}
 
-\affiliation{\vspace{0.5cm}\textsuperscript{} }
+\authornote{
+
+We thank the anonymous reviewers for their very valuable feedback. HM received funding from the ANR (SCALUP, ANR-21-CE28-0016-01), and from the John Tempelton Foundation (``An Evolutionary and Cultural Perspective on Intellectual Humility via Intellectual Curiosity and Epistemic Deference''). The ANR also supported this project through FrontCog (ANR-17-EURE-0017), and PSL (ANR-10-IDEX-0001-02).
+
+Correspondence concerning this article should be addressed to Hugo Mercier, . E-mail: \href{mailto:hugo.mercier@gmail.com}{\nolinkurl{hugo.mercier@gmail.com}}
+
+}
+
+\affiliation{\vspace{0.5cm}\textsuperscript{1} Institut Jean Nicod, Département d'études cognitives, ENS, EHESS, PSL University, CNRS, France\\\textsuperscript{2} Max Planck Institute for the Study of Crime, Security and Law, Freiburg im Breisgau, Germany}
 
 \abstract{%
 Are people who agree on something more likely to be right and competent? Evidence suggests that people tend to make this inference. However, standard wisdom of crowds approaches only provide limited normative grounds. Using simulations and analytical arguments, we argue that when individuals make independent and unbiased estimates, under a wide range of parameters, individuals whose answers converge with each other tend to have more accurate answers and to be more competent. In 6 experiments (UK participants, total N = 1197), we show that participants infer that informants who agree have more accurate answers and are more competent, even when they have no priors, and that these inferences are weakened when the informants were systematically biased. In conclusion, we speculate that inferences from convergence to accuracy and competence might help explain why people deem scientists competent, even if they have little understanding of science.
@@ -210,6 +236,8 @@ Are people who agree on something more likely to be right and competent? Evidenc
 
 \begin{document}
 \maketitle
+
+\newpage
 
 \section{Introduction}\label{introduction}
 
@@ -233,13 +261,13 @@ Other studies manipulated the degree of convergence within a group of advisors. 
 
 Studies on advice taking thus suggest participants believe that more convergent opinions are more likely to be correct. None of these studies investigated whether participants also believe that those whose opinions converge are also more likely to possess greater underlying competence.
 
-In categorical choice contexts, there is ample and long-standing (e.g. Crutchfield, 1955) evidence from experimental psychology that participants are more likely to be influenced by majority opinions, and that this influence is stronger when the majority is larger, both in absolute and in relative terms (e.g., Morgan, Rendell, Ehn, Hoppitt, \& Laland, 2012; for review, see H. Mercier \& Morin, 2019). This is true even if normative conformity (when people follow the majority because of social pressure rather than a belief that the majority is correct) is unlikely to play an important role (e.g.~because the answers are private, see Asch, 1956). Similar results have been obtained with young children (Bernard, Harris, Terrier, \& Clément, 2015; Bernard, Proust, \& Clément, 2015; Chen, Corriveau, \& Harris, 2013; Corriveau, Fusaro, \& Harris, 2009; e.g. Fusaro \& Harris, 2008; Herrmann, Legare, Harris, \& Whitehouse, 2013; Morgan, Laland, \& Harris, 2015).
+In categorical choice contexts, there is ample and long-standing (e.g. Crutchfield, 1955) evidence from experimental psychology that participants are more likely to be influenced by majority opinions, and that this influence is stronger when the majority is larger, both in absolute and in relative terms (e.g., Morgan, Rendell, Ehn, Hoppitt, \& Laland, 2012; for review, see Mercier \& Morin, 2019). This is true even if normative conformity (when people follow the majority because of social pressure rather than a belief that the majority is correct) is unlikely to play an important role (e.g.~because the answers are private, see Asch, 1956). Similar results have been obtained with young children (Bernard, Harris, Terrier, \& Clément, 2015; Bernard, Proust, \& Clément, 2015; Chen, Corriveau, \& Harris, 2013; Corriveau, Fusaro, \& Harris, 2009; e.g. Fusaro \& Harris, 2008; Herrmann, Legare, Harris, \& Whitehouse, 2013; Morgan, Laland, \& Harris, 2015).
 
 If many studies have demonstrated that participants tend to infer that more convergent answers are more likely to be correct, few have examined whether participants thought that this convergence was indicative of the informants' competence. One potential exception is a study with preschoolers in which the children were more likely to believe the opinion of an informant who had previously been the member of a majority over that of an informant who had dissented from the majority (Corriveau et al., 2009). However, it is not clear whether the children thought the members of the majority were particularly competent, since their task--naming an object--was one in which children should already expect a high degree of competence from (adult) informants. This result might thus indicate simply that children infer that someone who disagrees with several others on how to call something is likely wrong, and thus likely less competent at least in that domain.
 
 \section{What inferences from convergence should we expect people to draw?}\label{what-inferences-from-convergence-should-we-expect-people-to-draw}
 
-Should we expect that people be able to infer that more convergent answers likely indicate not only more accurate answers, but also that those who gave the answers were competent? In order to make the best of communicated information, humans have to be able to evaluate it, so as to discard inaccurate or harmful information, while accepting accurate and beneficial information (Smith \& Harper, 2003). It has been argued that a suite of cognitive mechanisms--mechanisms of epistemic vigilance--evolved to serve this function (Hugo Mercier, 2020; Sperber et al., 2010). Since the opinion of more than one individual is often available to us, there should be mechanisms of epistemic vigilance dedicated to processing such situations. It would be these mechanisms that lead us to put more weight on an opinion that is shared by a larger majority (in relative or absolute terms), and, in some cases at least, to discount majority opinion when the opinions haven't been formed independently of each other (Hugo Mercier \& Miton, 2019). Evidence suggests that these mechanisms rely on heuristics which become more refined with age (Morgan et al., 2015), and which are far from perfect (Hugo Mercier \& Miton, 2019; in particular, they ignore many cases of informational dependencies, see, e.g. Yousif, Aboody, \& Keil, 2019). As mentioned above, in the experiments evaluating how people process convergent information, the participants had grounds to believe that the information came from competent informants. However, the same mechanisms could lead people to perform the same inference when they do not have such information (especially since, as is shown presently, such an inference is warranted).
+Should we expect that people be able to infer that more convergent answers likely indicate not only more accurate answers, but also that those who gave the answers were competent? In order to make the best of communicated information, humans have to be able to evaluate it, so as to discard inaccurate or harmful information, while accepting accurate and beneficial information (Smith \& Harper, 2003). It has been argued that a suite of cognitive mechanisms--mechanisms of epistemic vigilance--evolved to serve this function (Mercier, 2020; Sperber et al., 2010). Since the opinion of more than one individual is often available to us, there should be mechanisms of epistemic vigilance dedicated to processing such situations. It would be these mechanisms that lead us to put more weight on an opinion that is shared by a larger majority (in relative or absolute terms), and, in some cases at least, to discount majority opinion when the opinions haven't been formed independently of each other (Mercier \& Miton, 2019). Evidence suggests that these mechanisms rely on heuristics which become more refined with age (Morgan et al., 2015), and which are far from perfect (Mercier \& Miton, 2019; in particular, they ignore many cases of informational dependencies, see, e.g. Yousif, Aboody, \& Keil, 2019). As mentioned above, in the experiments evaluating how people process convergent information, the participants had grounds to believe that the information came from competent informants. However, the same mechanisms could lead people to perform the same inference when they do not have such information (especially since, as is shown presently, such an inference is warranted).
 
 Regarding the inference from convergence to competence, other cognitive mechanisms allow us to infer how competent people are, based on a variety of cues, from visual access (Pillow, 1989), to the time it takes to answer a question (Richardson \& Keil, 2022). One of the most basic of these mechanisms infers from the fact that someone was right, that they possess some underlying competence (e.g. Koenig, Clément, \& Harris, 2004). As a result, if participants infer that convergent opinions are more likely to be accurate, they should also infer that the informants who provided the opinions are competent. Before testing whether participants infer accuracy and competence from convergence, we show that these inferences are normatively warranted, both in the categorical and in the continuous case.
 
@@ -307,7 +335,7 @@ The simulations for the numerical and categorical case demonstrate a similar pat
 
 \section{Overview of the experiments}\label{overview-of-the-experiments}
 
-Our models indicate that groups of informants are more likely to have given accurate answers, and to be competent, when their answers converge. In a series of experiments, we test whether people draw these inferences both in numerical tasks (Experiments 1, 2, 3), and in categorical tasks (Experiments 4, 5, 6). By contrast with previous studies, participants were not given any information about the tasks--how difficult they were--and the informants--how competent they might be. There has recently been much interest in investigating whether participants are able to take informational dependencies into account when evaluating convergent information (Desai, Xie, \& Hayes, 2022; Hugo Mercier \& Miton, 2019; Xie \& Hayes, 2022; Yin, Xu, Lin, Zhou, \& Guo, 2024; Yousif et al., 2019). To test whether participants took into account dependencies between the informants in the present context, this factor was manipulated in two different ways (in Experiment 2, some informants had discussed with each other; in Experiments 3 and 5, some informants had an incentive to provide the same answer). We predicted that dependencies between the informants' answers should reduce participants' reliance on the convergence of the answer as a cue to accuracy and to competence.
+Our models indicate that groups of informants are more likely to have given accurate answers, and to be competent, when their answers converge. In a series of experiments, we test whether people draw these inferences both in numerical tasks (Experiments 1, 2, 3), and in categorical tasks (Experiments 4, 5, 6). By contrast with previous studies, participants were not given any information about the tasks--how difficult they were--and the informants--how competent they might be. There has recently been much interest in investigating whether participants are able to take informational dependencies into account when evaluating convergent information (Desai, Xie, \& Hayes, 2022; Mercier \& Miton, 2019; Xie \& Hayes, 2022; Yin, Xu, Lin, Zhou, \& Guo, 2024; Yousif et al., 2019). To test whether participants took into account dependencies between the informants in the present context, this factor was manipulated in two different ways (in Experiment 2, some informants had discussed with each other; in Experiments 3 and 5, some informants had an incentive to provide the same answer). We predicted that dependencies between the informants' answers should reduce participants' reliance on the convergence of the answer as a cue to accuracy and to competence.
 
 All experiments were preregistered. All documents, data and code can be found on Open Science Framework \href{https://osf.io/6abqy/?view_only=42632bccea604fd7928dbe58e087d23b}{project page} (\url{https://osf.io/6abqy/?view_only=42632bccea604fd7928dbe58e087d23b}). All analyses were conducted in R (version 4.2.2) using R Studio. For most statistical models, we relied on the \texttt{lme4} package and its \texttt{lmer()} function. Unless mentioned otherwise, we report unstandardized model coefficients that can be interpreted in units of the scales we use for our dependent variables.
 
@@ -384,7 +412,7 @@ We used the materials generated for the convergent condition of Experiment 1. By
 
 To account for dependencies of observations due to our within-participant design, we ran mixed models, with a random intercept for participants. Visualizations and descriptive statistics can be found in ESM, section \ref{exp2}. The data does not support our hypotheses. Participants were slightly less confident about their estimates when the converging informants were independent (mean = 3.78, sd = 1.50), compared to when they discussed (mean = 4.03, sd = 1.39; \(\hat{b}_{\text{Accuracy}}\) = -0.26 {[}-0.462, -0.048{]}, p = 0.016). The effect is small, but in the opposite direction of what we had predicted. We do not find an effect regarding competence (\(\hat{b}_{\text{Competence}}\) = -0.12 {[}-0.272, 0.032{]}, p = 0.120).
 
-Contrary to the hypotheses, participants did not deem convergent estimates made after a discussion, compared to independently made estimates, to be less accurate, or produced by less competent individuals. This might stem from the fact that participants, in various situations, neglect informational dependencies (Yousif et al., 2019), or from the fact that discussing groups actually perform better than non-discussing groups in a range of tasks (for review, see, e.g., H. Mercier, 2016), including numerical estimates (e.g. H. Mercier \& Claidière, 2022). As a result, the participants in the current experiment might have been behaving rationally when they did not discount the estimates made after discussion.
+Contrary to the hypotheses, participants did not deem convergent estimates made after a discussion, compared to independently made estimates, to be less accurate, or produced by less competent individuals. This might stem from the fact that participants, in various situations, neglect informational dependencies (Yousif et al., 2019), or from the fact that discussing groups actually perform better than non-discussing groups in a range of tasks (for review, see, e.g., Mercier, 2016), including numerical estimates (e.g. Mercier \& Claidière, 2022). As a result, the participants in the current experiment might have been behaving rationally when they did not discount the estimates made after discussion.
 
 \section{Experiment 3}\label{experiment-3}
 
@@ -584,13 +612,13 @@ On the whole, participants thus appear to draw normatively justified inferences:
 
 \section{Conclusion}\label{conclusion}
 
-When people see that others agree with each other, they tend to believe that they are right. This inference has been evidenced in several experiments, both for numerical estimates (Budescu \& Rantilla, 2000; Budescu et al., 2003; Budescu \& Yu, 2007; e.g. Molleman et al., 2020; Yaniv et al., 2009), and for categorical choices (e.g., Morgan et al., 2012; for review, see H. Mercier \& Morin, 2019). However, these experiments do not test whether this inference of accuracy of the information extends to an inference of competence of the informants. Moreover, by their design, participants arguably assumed a degree of competence among the informants. For instance, when children are confronted with several individuals who agree on how to name a novel object (e.g. Corriveau et al., 2009), they can assume that these (adult) individuals tend to know what the names of objects are. If a certain competence of the informants is assumed, then well-known results from the literature on judgment aggregation--the wisdom of crowds--show that the average opinion of a set of individuals is, in a wide range of circumstances, more likely to be accurate than that of a single individual (e.g. Larrick \& Soll, 2006).
+When people see that others agree with each other, they tend to believe that they are right. This inference has been evidenced in several experiments, both for numerical estimates (Budescu \& Rantilla, 2000; Budescu et al., 2003; Budescu \& Yu, 2007; e.g. Molleman et al., 2020; Yaniv et al., 2009), and for categorical choices (e.g., Morgan et al., 2012; for review, see Mercier \& Morin, 2019). However, these experiments do not test whether this inference of accuracy of the information extends to an inference of competence of the informants. Moreover, by their design, participants arguably assumed a degree of competence among the informants. For instance, when children are confronted with several individuals who agree on how to name a novel object (e.g. Corriveau et al., 2009), they can assume that these (adult) individuals tend to know what the names of objects are. If a certain competence of the informants is assumed, then well-known results from the literature on judgment aggregation--the wisdom of crowds--show that the average opinion of a set of individuals is, in a wide range of circumstances, more likely to be accurate than that of a single individual (e.g. Larrick \& Soll, 2006).
 
 Here, we assumed no prior knowledge of individual competence, asking the question: if we see informants, whose competence is unknown, converge on an answer, is it rational to infer that this answer is more likely to be correct, and that the informants are likely to be competent? We have shown that the answer is yes on both counts--assuming there is no systematic bias among the informants. An analytical argument and a series of simulations revealed that, for both the numerical choice context and the categorical choice context, the more individuals agree on an answer, the more likely the answer is correct, and the more likely the individuals are competent, with the former effect being stronger than the latter. Moreover, this is true for a wide range of assumed population distributions of competence. In a series of experiments, we have shown that participants (UK) draw these inferences, but that they do so less when there is reason to assume a bias among informants.
 
 The results--both simulations and experiments--are a novel contribution to the wisdom of crowds literature. In this literature--in particular that relying on the Condorcet Jury Theorem--a degree of competence is assumed in the individuals providing some answers. From that competence, it can be inferred that the individuals will tend to agree, and that their answers will tend to be accurate. Here, we have shown that the reverse inference--from agreement to competence--is also warranted, and that it is warranted under a wide range of circumstances: If one does not suspect any systematic bias, convergence alone can be a valid cue when determining who tends to be an expert. This finding qualifies work suggesting that people need a certain degree of expertise themselves, in order to figure out who is an expert (Hahn, Merdes, \& Sydow, 2018; Nguyen, 2020).
 
-The present experiments show that people draw inferences from convergence to accuracy and to competence, but then do not precisely show how they do it. As suggested in the introduction, it is plausible that participants use the combination of two heuristics: one leading them from convergence to accuracy, and one from accuracy to competence. This two step process is coherent with the observation that the inference from convergence to accuracy (one step) is stronger than that from convergence to competence (two steps). However, our results are also compatible with participants performing two inferences from convergence, one to accuracy and one to competence, the latter being weaker because the inferences roughly follow the normative model. Our results are coherent with work on other mechanisms of epistemic vigilance that process the combination of several informants' opinions, showing that these mechanisms rely on sensible cues, but also systematically fail to take some subtle cues into account (H. Mercier \& Morin, 2019).
+The present experiments show that people draw inferences from convergence to accuracy and to competence, but then do not precisely show how they do it. As suggested in the introduction, it is plausible that participants use the combination of two heuristics: one leading them from convergence to accuracy, and one from accuracy to competence. This two step process is coherent with the observation that the inference from convergence to accuracy (one step) is stronger than that from convergence to competence (two steps). However, our results are also compatible with participants performing two inferences from convergence, one to accuracy and one to competence, the latter being weaker because the inferences roughly follow the normative model. Our results are coherent with work on other mechanisms of epistemic vigilance that process the combination of several informants' opinions, showing that these mechanisms rely on sensible cues, but also systematically fail to take some subtle cues into account (Mercier \& Morin, 2019).
 
 A most prominent context in which the inferences uncovered here might play a role is that of science. Much of science is counterintuitive, and most people do not have the background knowledge to evaluate most scientific evidence. However, science is, arguably, the institution in which individuals end up converging the most in their opinions (on consensus being the defining trait of science by contrast with other intellectual enterprises, see Collins, 2002). For instance, scientists within many disciplines agree on things ranging from the distance between the solar system and the center of the galaxy to the atomic structure of DNA. This represents an incredible degree of convergence. When people hear that scientists have measured the distance between the solar system and the center of the galaxy, if they assume that there is a broad agreement within the relevant experts, this should lead them to infer that this measure is accurate, and that the scientists who made it are competent. Experiments have already shown that increasing the degree of perceived consensus among scientists tends to increase acceptance of the consensual belief (Van Stekelenburg, Schaap, Veling, Van 'T Riet, \& Buijzen, 2022), but it hasn't been shown yet that the degree of consensus also affects the perceived competence of scientists.
 
@@ -724,13 +752,13 @@ Mannes, A. E. (2009). Are We Wise About the Wisdom of Crowds? The Use of Group J
 Mercier, H. (2016). The Argumentative Theory: Predictions and Empirical Evidence. \emph{Trends in Cognitive Sciences}, \emph{20}(9), 689--700. \url{https://doi.org/10.1016/j.tics.2016.07.001}
 
 \bibitem[\citeproctext]{ref-mercierNotBornYesterday2020}
-Mercier, Hugo. (2020). \emph{Not born yesterday: the science of who we trust and what we believe}. Retrieved from \url{https://doi.org/10.1515/9780691198842}
+Mercier, H. (2020). \emph{Not born yesterday: the science of who we trust and what we believe}. Retrieved from \url{https://doi.org/10.1515/9780691198842}
 
 \bibitem[\citeproctext]{ref-mercierDoesDiscussionMake2022}
 Mercier, H., \& Claidière, N. (2022). Does discussion make crowds any wiser? \emph{Cognition}, \emph{222}, 104912. \url{https://doi.org/10.1016/j.cognition.2021.104912}
 
 \bibitem[\citeproctext]{ref-mercierUtilizingSimpleCues2019}
-Mercier, Hugo, \& Miton, H. (2019). Utilizing simple cues to informational dependency. \emph{Evolution and Human Behavior}, \emph{40}(3), 301--314. \url{https://doi.org/10.1016/j.evolhumbehav.2019.01.001}
+Mercier, H., \& Miton, H. (2019). Utilizing simple cues to informational dependency. \emph{Evolution and Human Behavior}, \emph{40}(3), 301--314. \url{https://doi.org/10.1016/j.evolhumbehav.2019.01.001}
 
 \bibitem[\citeproctext]{ref-mercierMajorityRulesHow2019}
 Mercier, H., \& Morin, O. (2019). Majority rules: how good are we at aggregating convergent opinions? \emph{Evolutionary Human Sciences}, \emph{1}, e6. \url{https://doi.org/10.1017/ehs.2019.6}
@@ -1062,14 +1090,14 @@ To test the other two research questions, we ran the same mixed-models as for th
 
 \subsection{Minor deviation from preregistration}\label{minor-deviation-from-preregistration}
 
-In our preregistration, we stated we would run paired t-tests and only conduct mixed models as a robustness check. However, it became clear to us later that mixed models are more appropriate in light of our data structure. In the main article, we therefore only report the results of the mixed models. Note, however, that using paired t-tests, we confirm our results (Accuracy: -1.37, t-statistic = -26.14, p \textless{} .001; Competence: -1.23, t-statistic = -21.82, p \textless{} .001)
+In our preregistration, we stated we would run paired t-tests and only conduct mixed models as a robustness check. However, it became clear to us later that mixed models are more appropriate in light of our data structure. In the main article, we therefore only report the results of the mixed models. Note, however, that using paired t-tests, we confirm our results (Accuracy: 1.37, t-statistic = 26.14, p \textless{} .001; Competence: 1.23, t-statistic = 21.82, p \textless{} .001)
 
 \subsection{Sensitivity simulation}\label{sensitivity-simulation}
 
 We had based our power calculations on a paired t-test (using the widely used tool G*Power), which does not correspond to the mixed-models we eventually ran. To address this point, here, we seek to identify the minimum effect size that our analysis with mixed models could have detected, given a 90\% power, an N of 200 participants, and other parameters derived from the estimates observed in the sample of Experiment 1 (see \ref{tab:exp1-regression-table}). By contrast to a standard power simulation (which varies sample size), a sensitivity simulation varies the effect size, while holding the sample size and desired power constant.
 
 \begin{table}
-
+\centering
 \caption{\label{tab:exp1-regression-table}Model Results Experiment 1}
 \centering
 \begin{tabular}[t]{lcc}
@@ -1112,32 +1140,7 @@ The results of this can be seen in Fig. \ref{fig:sensitivity}. In our sample, we
 
 \section{Experiment 2}\label{exp2}
 
-\subsection{Design}\label{design-6}
-
 \FloatBarrier
-
-We manipulated informational dependency. According to the condition, players read a different introduction before seeing a set of estimates (see Table \ref{tab:exp2-conditions}).
-
-\begin{table}[tbp]
-
-\begin{center}
-\begin{threeparttable}
-
-\caption{\label{tab:exp2-conditions}}
-
-\begin{tabular}{m{3cm}m{12cm}}
-\toprule
-Condition & \multicolumn{1}{c}{Description}\\
-\midrule
-Independence & Players are asked to make completely independent decisions – they cannot see each other’s estimates, or talk with each other before giving their estimates.\\
-Discussion & Players are asked to talk with each other about the game at length before giving their estimates.\\
-\bottomrule
-\end{tabular}
-
-\end{threeparttable}
-\end{center}
-
-\end{table}
 
 \subsection{Attention check}\label{attention-check-1}
 
@@ -1182,32 +1185,7 @@ independent & 3.775 (sd = 1.502) & 4.36 (sd = 0.967)\\
 
 \section{Experiment 3}\label{exp3}
 
-\subsection{Design}\label{design-7}
-
 \FloatBarrier
-
-We manipulated two factors: informational dependency (two levels, independence and conflict of interest, see Table \ref{tab:conditions-exp3}; between participants) and convergence (two levels, convergence and divergence; within participants). Participants saw four scenarios, one for each combination of the two factors convergence and informational dependency.
-
-\begin{table}[tbp]
-
-\begin{center}
-\begin{threeparttable}
-
-\caption{\label{tab:conditions-exp3}}
-
-\begin{tabular}{m{3cm}m{12cm}}
-\toprule
-Condition & \multicolumn{1}{c}{Description}\\
-\midrule
-Independence & Experts are independent of each other, and have no conflict of interest in predicting the stock value - they do not personally profit in any way from any future valuation of the stock.\\
-Conflict of interest & All three experts have invested in the specific stock whose value they are predicting, and they benefit if other people believe that the stock will be valued at [mean of respective distribution] in the future.\\
-\bottomrule
-\end{tabular}
-
-\end{threeparttable}
-\end{center}
-
-\end{table}
 
 \subsection{Attention check}\label{attention-check-2}
 
@@ -1230,7 +1208,7 @@ For each set of predictions, we calculated the empirical mean based on the rando
 Table \ref{tab:exp3-table} contains descriptive results.
 
 \begin{table}
-
+\centering
 \caption{\label{tab:exp3-table}}
 \centering
 \begin{tabular}[t]{lllll}
@@ -1334,7 +1312,7 @@ consensus (3) & 80.745 (sd = 18.633) & 5.45 (sd = 0.981)\\
 We compared the accuracy and competence ratings of the participants to actual accuracy and competence values from simulated data. The data was generated using the model described in the main paper, and assuming a uniform competence distribution. Compared to this data generating model, participants underestimate the effect of convergence for both accuracy and competence, but more for accuracy. Table \ref{tab:model-vs-participant-table} compares the results of regressions on participant data and regressions on simulated data. Fig. \ref{fig:exp4-model} visualizes the results.
 
 \begin{table}
-
+\centering
 \caption{\label{tab:model-vs-participant-table}Participants vs. Model (Exp. 4)}
 \centering
 \begin{tabular}[t]{lcccc}
@@ -1361,7 +1339,6 @@ AIC & 6402.6 & 1756.0 & 3301803.1 & 1051474.5\\
 BIC & 6430.7 & 1784.1 & 3301835.2 & 1051506.7\\
 ICC & 0.6 & 0.6 &  & \\
 Log.Lik. &  &  & -1650898.534 & -525734.261\\
-F &  &  & 85844.746 & 16470.902\\
 RMSE & 8.98 & 0.49 & 34.42 & 1.17\\
 \bottomrule
 \multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
@@ -1380,32 +1357,7 @@ RMSE & 8.98 & 0.49 & 34.42 & 1.17\\
 
 \section{Experiment 5}\label{exp5}
 
-\subsection{Design}\label{design-8}
-
 \FloatBarrier
-
-We manipulated convergence within participants in the same way we did in experiment 4. In addition, between participants, we manipulated informational dependence, akin to experiment 3 (Table \ref{tab:exp5-condition}). In the biased condition, experts were described to gain personally from recommending a certain investment option - but without specifying what that option is. In the independent condition, there was no such conflict of interest and experts were described as independent.
-
-\begin{table}[tbp]
-
-\begin{center}
-\begin{threeparttable}
-
-\caption{\label{tab:exp5-condition}}
-
-\begin{tabular}{m{3cm}m{12cm}}
-\toprule
-Condition & \multicolumn{1}{c}{Description}\\
-\midrule
-Independence condition & The three advisors are independent of each other, and have no conflict of interest in making investment recommendations.\\
-Conflict of interest condition & The three advisors have already invested in one of the three options, the same option for all three. As a result, they have an incentive to push that option in their recommendations.\\
-\bottomrule
-\end{tabular}
-
-\end{threeparttable}
-\end{center}
-
-\end{table}
 
 \subsection{Attention check}\label{attention-check-4}
 
@@ -1418,10 +1370,10 @@ Do you agree with your friend? (Yes/No)
 Table \ref{tab:exp5-table} contains descriptive results.
 
 \begin{table}
-
+\centering
 \caption{\label{tab:exp5-table}}
 \centering
-\resizebox{\linewidth}{!}{
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
 \begin{tabular}[t]{lllll}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{2}{c}{Accuracy} & \multicolumn{2}{c}{Competence} \\
@@ -1440,7 +1392,7 @@ consensus (3) & 66.198 (sd = 24.825) & 71.914 (sd = 23.457) & 4.96 (sd = 1.273) 
 
 \section{Experiment 6}\label{exp6}
 
-\subsection{Design}\label{design-9}
+\subsection{Design}\label{design-6}
 
 \FloatBarrier
 
@@ -1550,10 +1502,10 @@ consensus (3) & \includegraphics[width=0.4\textwidth,height=\textheight]{Experim
 Figure \ref{fig:exp5-plot} visualizes the results and table \ref{tab:exp5-table} contains descriptive results.
 
 \begin{table}
-
+\centering\centering
 \caption{\label{tab:exp6-table}}
 \centering
-\resizebox{\linewidth}{!}{
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
 \begin{tabular}[t]{lllll}
 \toprule
 \multicolumn{1}{c}{} & \multicolumn{2}{c}{Accuracy} & \multicolumn{2}{c}{Competence} \\
@@ -1581,8 +1533,8 @@ consensus (3) & 79.967 (sd = 24.15) & 80.152 (sd = 20.774) & 5.647 (sd = 1.035) 
 Since we didn't find a difference between three and ten choice option scenarios in the participant data, we wanted to have a normative point of reference of what should have been the expected difference, given our model. We therefor compared participant ratings to observed values from simulated data. The data was generated using the model described in the main paper, and assuming a uniform competence distribution. Compared to this data generating model, participants considerably underestimated how the number of choice options alters the effect of convergence for both accuracy and competence. Table \ref{tab:model-vs-participant-table} compares the results of regressions on participant data and regressions on simulated data. Fig. \ref{fig:exp6-model} visualizes the results.
 
 \begin{table}
-
-\caption{\label{tab:unnamed-chunk-101}Participants vs. Model (Exp. 6)}
+\centering
+\caption{\label{tab:unnamed-chunk-98}Participants vs. Model (Exp. 6)}
 \centering
 \begin{tabular}[t]{lcccc}
 \toprule
@@ -1612,7 +1564,6 @@ AIC & 19980.3 & 5624.5 & 497742.9 & 170192.2\\
 BIC & 20026.5 & 5670.7 & 497787.1 & 170236.4\\
 ICC & 0.7 & 0.7 &  & \\
 Log.Lik. &  &  & -248866.472 & -85091.109\\
-F &  &  & 19902.699 & 3370.232\\
 RMSE & 10.67 & 0.53 & 31.83 & 1.28\\
 \bottomrule
 \multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\

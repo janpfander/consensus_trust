@@ -17,9 +17,7 @@ image_paths <- data.frame(
 kableExtra::kable(image_paths, format = "markdown",
                   col.names = c("Number of options: 3", "Number of options: 10"), 
                   align = "l",
-                  caption = "Example of a consensus stimulus for the two 'Number of option' conditions") %>%
-  # make smaller to fit
-  kable_styling(latex_options = "scale_down") 
+                  caption = "Example of a consensus stimulus for the two 'Number of option' conditions") 
 ```
 
 ## Attention check
@@ -53,12 +51,13 @@ kableExtra::kable(image_paths, format = "markdown",
                   col.names = c("Level", "Version a)", "Version b)"), 
                   align = "c",
                   caption = "Stimuli for 10 options condition by levels of convergence", 
-                  full_width = T) %>%
-  column_spec(1, width = "2em") %>%
-  column_spec(2, width = "20em") %>%
-  column_spec(3, width = "20em") %>%
-  # make smaller to fit
-  kable_styling(latex_options = "scale_down") 
+                  full_width = T) 
+# %>%
+#   column_spec(1, width = "2em") %>%
+#   column_spec(2, width = "20em") %>%
+#   column_spec(3, width = "20em") %>%
+#   # make smaller to fit
+#   kable_styling(latex_options = "scale_down") 
 
 ```
 
@@ -130,14 +129,25 @@ mutate(number_options = ifelse(number_options == "three", "3 options",
 
 table <- cbind(exp6_accuracy, exp6_competence)
 
-table %>%
-  kable(booktabs = TRUE, 
-        # need to add a (empty) caption for cross referencing to work
-        caption = "") %>%
-  kable_styling() %>% 
-  add_header_above(c("", "Accuracy" = 2, "Competence" = 2)) %>%
-  # make smaller to fit
-  kable_styling(latex_options = "scale_down") 
+# Conditionally apply table formatting based on output format
+if (knitr::is_latex_output() || knitr::is_html_output()) {
+  # For LaTeX/HTML: Use kable and add_header_above
+  table_output <- table %>%
+    kable(booktabs = TRUE, 
+          caption = "") %>%  # Empty caption for cross-referencing
+    kable_styling() %>%
+    add_header_above(c("", "Accuracy" = 2, "Competence" = 2)) %>%
+    kable_styling(latex_options = "scale_down")  # Scale down for LaTeX
+} else {
+  # For Word: Use apa_table for APA-style table
+  table_output <- papaja::apa_table(
+    table, 
+    caption = "Participants vs. Model"
+  )
+}
+
+# Print the table
+table_output
 ```
 
 (ref:exp6-plot) Interaction of convergence and informational dependency.
@@ -250,14 +260,23 @@ exp6_model_competence = lmer(competence ~ convergence + number_options_effect_co
 ```
 
 ```{r}
-modelsummary::modelsummary(list("Accuracy" = exp6_model_accuracy, 
-                                "Competence" = exp6_model_competence,
-                                "Accuracy" = accuracy, 
-                                "Competence" = competence
-                                ),
-                           title = 'Participants vs. Model (Exp. 6)', 
-                           stars = TRUE) %>%
-  kableExtra::add_header_above(c(" " = 1, "Participants" = 2, "Model" = 2))
+# Create the basic table
+table_output <- modelsummary::modelsummary(list("Accuracy" = exp6_model_accuracy, 
+                                                "Competence" = exp6_model_competence,
+                                                "Accuracy" = accuracy, 
+                                                "Competence" = competence),
+                                           title = 'Participants vs. Model (Exp. 6)', 
+                                           stars = TRUE,
+                                           output = "kableExtra")
+
+# Conditionally apply header styling for LaTeX or HTML
+if (knitr::is_latex_output() || knitr::is_html_output()) {
+  table_output <- table_output %>%
+    kableExtra::add_header_above(c(" " = 1, "Participants" = 2, "Model" = 2))
+}
+
+# Print the table
+table_output
 ```
 
 (ref:exp6-model) Comparison of accuracy (top) and competence (bottom) ratings in participant data (left) to observations in simulated data (right), by level of convergence. 

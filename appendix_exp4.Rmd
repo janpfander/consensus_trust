@@ -30,10 +30,11 @@ image_paths <- data.frame(condition = c("minority (0)",
 kableExtra::kable(image_paths, format = "markdown",
                   col.names = c("Level", "Version a)", "Version b)"), 
                   align = "c",
-                  caption = "All stimuli by levels of convergence") %>%
-  column_spec(1, width = "2em") %>%
-  column_spec(2, width = "15em") %>%
-  column_spec(3, width = "15em") 
+                  caption = "All stimuli by levels of convergence") 
+# %>%
+#   column_spec(1, width = "2em") %>%
+#   column_spec(2, width = "15em") %>%
+#   column_spec(3, width = "15em") 
 
 ```
 
@@ -147,14 +148,22 @@ competence_participants <- lmer(competence ~ convergence +
                            (1 + convergence | id), data = d)
 
 # main result table
-modelsummary::modelsummary(list("Accuracy" = accuracy_participants, 
-                                "Competence" = competence_participants,
-                                "Accuracy" = accuracy_model, 
-                                "Competence" = competence_model
-                                ),
-                           title = 'Participants vs. Model (Exp. 4)', 
-                           stars = TRUE) %>%
-  kableExtra::add_header_above(c(" " = 1, "Participants" = 2, "Model" = 2))
+table_output <- modelsummary::modelsummary(list("Accuracy" = accuracy_participants, 
+                                                "Competence" = competence_participants,
+                                                "Accuracy" = accuracy_model, 
+                                                "Competence" = competence_model
+                                                ),
+                                           title = 'Participants vs. Model (Exp. 4)', 
+                                           stars = TRUE, 
+                                           output = "kableExtra")
+
+# Check if the output format is LaTeX or HTML, apply add_header_above accordingly
+if (knitr::is_latex_output() || knitr::is_html_output()) {
+  table_output <- table_output %>%
+    kableExtra::add_header_above(c(" " = 1, "Participants" = 2, "Model" = 2))
+}
+
+table_output
 ```
 
 ```{r, echo=FALSE}
