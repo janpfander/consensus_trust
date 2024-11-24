@@ -8,7 +8,7 @@ text_ready <- function(model_output) {
     filter(effect == "fixed") %>% 
     # report p.value according to apa standards
     mutate(p.value = case_when(p.value < 0.001 ~ "< .001",
-                               TRUE ~ sprintf("%.3f", p.value)
+                               TRUE ~ paste0("= ", sprintf("%.3f", p.value))
     )
     ) %>% 
     # all other terms

@@ -10,7 +10,8 @@
 **/*_files/
 **/sim*
 **/sensitivity*
-*.docx
+*cover_letter_consensus.docx
+*paper.docx
 *.log
 *.html
 
