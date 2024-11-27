@@ -21,4 +21,6 @@ revisions/*
 
 # remove other specific files
 author_info*
+
+# remove old analysis files
 *analysis*
